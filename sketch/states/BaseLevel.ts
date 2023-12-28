@@ -1,4 +1,6 @@
+/// <reference path="../helpers/HelperStateManager.ts" />
 class BaseLevel {
+    private timePlayingThisLevel = 0;
     private progressBar: ProgressBar;
     private progressBarPositionX = CANVAS_WIDTH / 2 - spriteProgressEmpty.width / 2;
     private progressBarPositionY = 100;
@@ -22,26 +24,27 @@ class BaseLevel {
     }
 
     draw() {
+        this.timePlayingThisLevel++;
         textAlign(LEFT, TOP);
         text(`${this.level.codename}`, 34, 34);
         text(`Hold Left Mouse Button to interact ^_^`, 34, 74);
         // imageMode(CENTER);
 
+        this.drawProgressBar();
+        this.opponent.draw();
 
-        if (this.opponent.state === OpponentState.WORKING) {
-            this.currentProgress -= this.progressBar.progressReductionStep;
-            if (this.currentProgress < 0) {
-                this.currentProgress = 0;
-            }
+        if (this.timePlayingThisLevel <= 5) { return }
+
+        if (mouseIsPressed && this.opponent.state === OpponentState.WORKING) {
+            this.opponent.state = OpponentState.SHOCKED;
         }
-        if (mouseIsPressed) {
+
+        if (mouseIsPressed && this.opponent.state !== OpponentState.SHOCKED) {
             this.beInteracted();
         } else {
             this.beIdle();
         }
 
-        this.drawProgressBar();
-        this.opponent.draw();
     }
 
     drawProgressBar() {

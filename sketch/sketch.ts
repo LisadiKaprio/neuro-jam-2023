@@ -15,13 +15,14 @@ let buttonSoundDisabledHover: p5.Image;
 let spriteProgressEmpty: p5.Image;
 let spriteProgressFull: p5.Image;
 
-let idleCharacterFrames: p5.Image[];
-let idleCharacterAnimation: p5.Image[];
-let idleCharacterFrameDurations: number[];
+let idleCharacterImages: p5.Image[];
+let idleCharacterAnimation: Frame[];
 
-let interactedCharacterFrames: p5.Image[];
-let interactedCharacterAnimation: p5.Image[];
-let interactedCharacterFrameDurations: number[];
+let interactedCharacterImages: p5.Image[];
+let interactedCharacterAnimation: Frame[];
+
+let distractedOpponentAnimation: Frame[];
+let shockedOpponentAnimation: Frame[];
 
 
 function preload() {
@@ -41,25 +42,74 @@ function preload() {
   spriteProgressFull = loadImage('../art/interface//progressBar-full.png');
 
 
-  idleCharacterFrames = Array.from({ length: 3 }, (_, i) => loadImage(`${animFilePath}/idle-${i}.png`));
+  idleCharacterImages = Array.from({ length: 3 }, (_, i) => loadImage(`${animFilePath}/idle-${i}.png`));
+
   idleCharacterAnimation = [
-    idleCharacterFrames[0],
-    idleCharacterFrames[1],
-    idleCharacterFrames[2],
-    idleCharacterFrames[1]
-  ]
-  idleCharacterFrameDurations = [10, 1, 1, 1];
+    {
+      image: idleCharacterImages[0],
+      duration: 10
+    },
+    {
+      image: idleCharacterImages[1],
+      duration: 1
+    },
+    {
+      image: idleCharacterImages[2],
+      duration: 1
+    },
+    {
+      image: idleCharacterImages[1],
+      duration: 1
+    }
+  ] as Frame[];
 
 
-  interactedCharacterFrames = Array.from({ length: 3 }, (_, i) => loadImage(`${animFilePath}/interacted-${i}.png`));
+  interactedCharacterImages = Array.from({ length: 3 }, (_, i) => loadImage(`${animFilePath}/interacted-${i}.png`));
   interactedCharacterAnimation = [
-    idleCharacterFrames[0],
-    interactedCharacterFrames[0],
-    interactedCharacterFrames[1],
-    interactedCharacterFrames[2],
-    interactedCharacterFrames[1]
+    {
+      image: idleCharacterImages[0],
+      duration: 10
+    },
+    {
+      image: interactedCharacterImages[0],
+      duration: 1
+    },
+    {
+      image: interactedCharacterImages[1],
+      duration: 1
+    },
+    {
+      image: interactedCharacterImages[2],
+      duration: 1
+    },
+    {
+      image: interactedCharacterImages[1],
+      duration: 1
+    }
+  ] as Frame[];
+
+  distractedOpponentAnimation = [
+    {
+      image: idleCharacterImages[1],
+      duration: 2
+    },
+    {
+      image: idleCharacterImages[2],
+      duration: 2
+    }
   ]
-  interactedCharacterFrameDurations = [3, 1, 1, 1, 1];
+
+  shockedOpponentAnimation = [
+    {
+      image: interactedCharacterImages[2],
+      duration: 100
+    },
+    {
+      image: interactedCharacterImages[2],
+      duration: 1
+    }
+  ]
+
   mainMenu.preload();
 }
 

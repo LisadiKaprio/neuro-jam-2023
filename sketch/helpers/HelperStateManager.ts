@@ -31,6 +31,11 @@ class HelperStateManager {
         levelSelection.setup();
     }
 
+    switchToLoseScreen() {
+        this.currentScene = introSplashScreen;
+        introSplashScreen.setup();
+    }
+
     initiateLevel(level: Level) {
         this.currentScene = new BaseLevel(level);
     }

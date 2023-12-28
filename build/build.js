@@ -1,58 +1,3 @@
-class ColorHelper {
-    static getColorVector(c) {
-        return createVector(red(c), green(c), blue(c));
-    }
-    static rainbowColorBase() {
-        return [
-            color('red'),
-            color('orange'),
-            color('yellow'),
-            color('green'),
-            color(38, 58, 150),
-            color('indigo'),
-            color('violet')
-        ];
-    }
-    static getColorsArray(total, baseColorArray = null) {
-        if (baseColorArray == null) {
-            baseColorArray = ColorHelper.rainbowColorBase();
-        }
-        var rainbowColors = baseColorArray.map(x => this.getColorVector(x));
-        ;
-        let colours = new Array();
-        for (var i = 0; i < total; i++) {
-            var colorPosition = i / total;
-            var scaledColorPosition = colorPosition * (rainbowColors.length - 1);
-            var colorIndex = Math.floor(scaledColorPosition);
-            var colorPercentage = scaledColorPosition - colorIndex;
-            var nameColor = this.getColorByPercentage(rainbowColors[colorIndex], rainbowColors[colorIndex + 1], colorPercentage);
-            colours.push(color(nameColor.x, nameColor.y, nameColor.z));
-        }
-        return colours;
-    }
-    static getColorByPercentage(firstColor, secondColor, percentage) {
-        var firstColorCopy = firstColor.copy();
-        var secondColorCopy = secondColor.copy();
-        var deltaColor = secondColorCopy.sub(firstColorCopy);
-        var scaledDeltaColor = deltaColor.mult(percentage);
-        return firstColorCopy.add(scaledDeltaColor);
-    }
-}
-class PolygonHelper {
-    static draw(numberOfSides, width) {
-        push();
-        const angle = TWO_PI / numberOfSides;
-        const radius = width / 2;
-        beginShape();
-        for (let a = 0; a < TWO_PI; a += angle) {
-            let sx = cos(a) * radius;
-            let sy = sin(a) * radius;
-            vertex(sx, sy);
-        }
-        endShape(CLOSE);
-        pop();
-    }
-}
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 640;
 let COLOR_YELLOW = `rgb(255, 238, 205)`;
@@ -76,12 +21,12 @@ let buttonSoundDisabled;
 let buttonSoundDisabledHover;
 let spriteProgressEmpty;
 let spriteProgressFull;
-let idleCharacterFrames;
+let idleCharacterImages;
 let idleCharacterAnimation;
-let idleCharacterFrameDurations;
-let interactedCharacterFrames;
+let interactedCharacterImages;
 let interactedCharacterAnimation;
-let interactedCharacterFrameDurations;
+let distractedOpponentAnimation;
+let shockedOpponentAnimation;
 function preload() {
     soundFormats('mp3');
     musicMenu = loadSound(`../audio/music-little-think.mp3`);
@@ -95,23 +40,68 @@ function preload() {
     buttonSoundDisabledHover = loadImage(`../art/interface/button-sound-disabled-hover.png`);
     spriteProgressEmpty = loadImage('../art/interface/progressBar-empty.png');
     spriteProgressFull = loadImage('../art/interface//progressBar-full.png');
-    idleCharacterFrames = Array.from({ length: 3 }, (_, i) => loadImage(`${animFilePath}/idle-${i}.png`));
+    idleCharacterImages = Array.from({ length: 3 }, (_, i) => loadImage(`${animFilePath}/idle-${i}.png`));
     idleCharacterAnimation = [
-        idleCharacterFrames[0],
-        idleCharacterFrames[1],
-        idleCharacterFrames[2],
-        idleCharacterFrames[1]
+        {
+            image: idleCharacterImages[0],
+            duration: 10
+        },
+        {
+            image: idleCharacterImages[1],
+            duration: 1
+        },
+        {
+            image: idleCharacterImages[2],
+            duration: 1
+        },
+        {
+            image: idleCharacterImages[1],
+            duration: 1
+        }
     ];
-    idleCharacterFrameDurations = [10, 1, 1, 1];
-    interactedCharacterFrames = Array.from({ length: 3 }, (_, i) => loadImage(`${animFilePath}/interacted-${i}.png`));
+    interactedCharacterImages = Array.from({ length: 3 }, (_, i) => loadImage(`${animFilePath}/interacted-${i}.png`));
     interactedCharacterAnimation = [
-        idleCharacterFrames[0],
-        interactedCharacterFrames[0],
-        interactedCharacterFrames[1],
-        interactedCharacterFrames[2],
-        interactedCharacterFrames[1]
+        {
+            image: idleCharacterImages[0],
+            duration: 10
+        },
+        {
+            image: interactedCharacterImages[0],
+            duration: 1
+        },
+        {
+            image: interactedCharacterImages[1],
+            duration: 1
+        },
+        {
+            image: interactedCharacterImages[2],
+            duration: 1
+        },
+        {
+            image: interactedCharacterImages[1],
+            duration: 1
+        }
     ];
-    interactedCharacterFrameDurations = [3, 1, 1, 1, 1];
+    distractedOpponentAnimation = [
+        {
+            image: idleCharacterImages[1],
+            duration: 2
+        },
+        {
+            image: idleCharacterImages[2],
+            duration: 2
+        }
+    ];
+    shockedOpponentAnimation = [
+        {
+            image: interactedCharacterImages[2],
+            duration: 100
+        },
+        {
+            image: interactedCharacterImages[2],
+            duration: 1
+        }
+    ];
     mainMenu.preload();
 }
 function setup() {
@@ -202,7 +192,7 @@ class IntroSplashScreen {
 const introSplashScreen = new IntroSplashScreen();
 class VolumeControl {
     constructor() {
-        this.musicVolume = 3;
+        this.musicVolume = 0.1;
         this.buttonSize = 0.75;
     }
     setup() {
@@ -292,6 +282,7 @@ class MainMenu {
 const mainMenu = new MainMenu();
 class BaseLevel {
     constructor(level) {
+        this.timePlayingThisLevel = 0;
         this.progressBarPositionX = CANVAS_WIDTH / 2 - spriteProgressEmpty.width / 2;
         this.progressBarPositionY = 100;
         this.currentFrame = 0;
@@ -305,23 +296,24 @@ class BaseLevel {
     setup() {
     }
     draw() {
+        this.timePlayingThisLevel++;
         textAlign(LEFT, TOP);
         text(`${this.level.codename}`, 34, 34);
         text(`Hold Left Mouse Button to interact ^_^`, 34, 74);
-        if (this.opponent.state === OpponentState.WORKING) {
-            this.currentProgress -= this.progressBar.progressReductionStep;
-            if (this.currentProgress < 0) {
-                this.currentProgress = 0;
-            }
+        this.drawProgressBar();
+        this.opponent.draw();
+        if (this.timePlayingThisLevel <= 5) {
+            return;
         }
-        if (mouseIsPressed) {
+        if (mouseIsPressed && this.opponent.state === OpponentState.WORKING) {
+            this.opponent.state = OpponentState.SHOCKED;
+        }
+        if (mouseIsPressed && this.opponent.state !== OpponentState.SHOCKED) {
             this.beInteracted();
         }
         else {
             this.beIdle();
         }
-        this.drawProgressBar();
-        this.opponent.draw();
     }
     drawProgressBar() {
         this.progressBar.currentProgress = this.currentProgress;
@@ -355,6 +347,10 @@ class HelperStateManager {
     switchToLevelSelection() {
         this.currentScene = levelSelection;
         levelSelection.setup();
+    }
+    switchToLoseScreen() {
+        this.currentScene = introSplashScreen;
+        introSplashScreen.setup();
     }
     initiateLevel(level) {
         this.currentScene = new BaseLevel(level);
@@ -432,8 +428,17 @@ class Opponent {
         this.state = OpponentState.WORKING;
         this.currentFrame = 0;
         this.characterSize = 1;
+        this.timeUntilStateChange = 10;
+        this.minWorkingTime = 25;
+        this.maxWorkingTime = 35;
+        this.minDistractionTime = 25;
+        this.maxDistractionTime = 45;
     }
     draw() {
+        this.timeUntilStateChange--;
+        if (this.timeUntilStateChange <= 0) {
+            this.handleStateChange();
+        }
         switch (this.state) {
             case OpponentState.WORKING:
                 this.drawWorking();
@@ -446,22 +451,43 @@ class Opponent {
             case OpponentState.ANGRY:
                 break;
             case OpponentState.SHOCKED:
+                this.drawShocked();
                 break;
         }
     }
+    handleStateChange() {
+        switch (this.state) {
+            case OpponentState.WORKING:
+                this.changeToState(OpponentState.DISTRACTED, 10, 20);
+                break;
+            case OpponentState.DISTRACTED:
+                this.changeToState(OpponentState.WORKING, this.minWorkingTime, this.maxWorkingTime);
+                break;
+        }
+    }
+    changeToState(state, minTimeUntilNextChange, maxTimeUntilNextChange) {
+        this.state = state;
+        this.timeUntilStateChange = random(minTimeUntilNextChange, maxTimeUntilNextChange);
+    }
     drawWorking() {
-        this.animate(idleCharacterAnimation, idleCharacterFrameDurations, this.positionX, this.positionY);
+        this.animate(idleCharacterAnimation, this.positionX, this.positionY);
     }
     drawDistracted() {
-        this.animate(interactedCharacterAnimation, interactedCharacterFrameDurations, this.positionX, this.positionY);
+        this.animate(distractedOpponentAnimation, this.positionX, this.positionY);
     }
-    animate(animation, animationFrameDurations, x, y) {
+    drawShocked() {
+        if (this.currentFrame >= (shockedOpponentAnimation.length - 1)) {
+            stateManager.switchToLoseScreen();
+        }
+        this.animate(shockedOpponentAnimation, this.positionX, this.positionY);
+    }
+    animate(animation, x, y) {
         if (this.currentFrame >= animation.length) {
             this.currentFrame = 0;
         }
-        const currentFrameImage = animation[this.currentFrame];
+        const currentFrameImage = animation[this.currentFrame].image;
         image(currentFrameImage, 0, 0);
-        if (frameCount % animationFrameDurations[this.currentFrame] === 0) {
+        if (frameCount % animation[this.currentFrame].duration === 0) {
             this.currentFrame = (this.currentFrame + 1) % animation.length;
         }
     }

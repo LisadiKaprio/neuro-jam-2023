@@ -5,7 +5,7 @@ class VolumeControl {
 
     private currentMusic: p5.SoundFile;
 
-    public musicVolume: number = 3;
+    public musicVolume: number = 0.1;
     public sfxVolume: number;
 
     buttonSize: number = 0.75;
