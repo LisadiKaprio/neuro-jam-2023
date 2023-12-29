@@ -4,7 +4,6 @@ enum OpponentState {
     WORKING = 'working',
     THINKING = 'thinking',
     DISTRACTED = 'distracted',
-    ANGRY = 'angry',
     SHOCKED = 'shocked',
 }
 
@@ -41,9 +40,6 @@ class Opponent {
                 break;
             case OpponentState.DISTRACTED:
                 this.drawDistracted();
-                break;
-            case OpponentState.ANGRY:
-                // this.drawAngry();
                 break;
             case OpponentState.SHOCKED:
                 this.drawShocked();

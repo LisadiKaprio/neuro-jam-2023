@@ -420,7 +420,6 @@ var OpponentState;
     OpponentState["WORKING"] = "working";
     OpponentState["THINKING"] = "thinking";
     OpponentState["DISTRACTED"] = "distracted";
-    OpponentState["ANGRY"] = "angry";
     OpponentState["SHOCKED"] = "shocked";
 })(OpponentState || (OpponentState = {}));
 class Opponent {
@@ -447,8 +446,6 @@ class Opponent {
                 break;
             case OpponentState.DISTRACTED:
                 this.drawDistracted();
-                break;
-            case OpponentState.ANGRY:
                 break;
             case OpponentState.SHOCKED:
                 this.drawShocked();
