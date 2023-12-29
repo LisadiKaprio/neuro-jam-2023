@@ -47,6 +47,11 @@ let spriteProgressFull;
 let defaultBackground;
 let idleEvilImages;
 let idleEvilAnimation;
+let evilWorkingImages;
+let evilWorkingAnimation;
+let evilWorkingFrenzyImage;
+let evilWorkingArmLeftImage;
+let evilWorkingArmRightImage;
 let workingOpponentImages;
 let workingOpponentAnimation;
 let workingArmImage;
@@ -121,6 +126,28 @@ function preload() {
         },
         {
             image: idleEvilImages[3],
+            duration: SHORT_FRAME_DURATION
+        },
+    ];
+    evilWorkingImages = Array.from({ length: 3 }, (_, i) => loadImage(`${evilFilePath}/working-body-${i}.png`));
+    evilWorkingFrenzyImage = loadImage(`${evilFilePath}/working-body-frenzy.png`);
+    evilWorkingArmLeftImage = loadImage(`${evilFilePath}/working-arm-left.png`);
+    evilWorkingArmRightImage = loadImage(`${evilFilePath}/working-arm-right.png`);
+    evilWorkingAnimation = [
+        {
+            image: evilWorkingImages[0],
+            duration: NORMAL_FRAME_DURATION * 7
+        },
+        {
+            image: evilWorkingImages[1],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: evilWorkingImages[2],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: evilWorkingImages[1],
             duration: SHORT_FRAME_DURATION
         },
     ];
@@ -478,6 +505,9 @@ class BaseLevel {
         this.evil.draw();
         this.opponent.draw();
         this.countdown.draw();
+        if (this.countdown.remainingTime <= 0) {
+            stateManager.switchToLoseScreen();
+        }
         if (this.timePlayingThisLevel <= 5 || this.opponent.state === OpponentState.SHOCKED) {
             return;
         }
@@ -507,21 +537,30 @@ class BaseLevel {
         ellipse(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, this.frenzyMeter);
     }
     beIdle() {
+        this.evil.state = EvilState.IDLE;
         if (this.frenzyMeter > 0) {
-            this.frenzyMeter = 0;
+            this.resetFrenzyMode();
         }
     }
     beInteracted() {
+        this.evil.state = EvilState.DESTROYING;
         this.currentProgress += this.progressBar.progressStep;
         if (this.frenzyMeter <= this.maxFrenzyMeter) {
             this.frenzyMeter += this.frenzyMeterStep;
         }
         else if (this.frenzyMeter >= this.maxFrenzyMeter && !this.enteredFrenzyMode) {
-            this.enteredFrenzyMode = true;
+            this.initiateFrenzyMode();
         }
     }
     initiateFrenzyMode() {
+        this.enteredFrenzyMode = true;
         this.progressBar.progressStep += this.frenzyProgressAddition;
+        this.evil.inFrenzy = true;
+    }
+    resetFrenzyMode() {
+        this.enteredFrenzyMode = false;
+        this.frenzyMeter = 0;
+        this.evil.inFrenzy = false;
     }
     mouseClicked() {
     }
@@ -670,11 +709,13 @@ class Countdown {
         this.startCountdownTime = this.initialMinutes * 60 + this.initialSeconds;
         this.countdownTime = this.startCountdownTime;
         this.startTime = 0;
+        this.remainingTime = this.countdownTime;
         this.startTime = millis();
     }
     draw() {
         let elapsedTime = floor((millis() - this.startTime) / 1000);
         let remainingTime = this.countdownTime - elapsedTime;
+        this.remainingTime = remainingTime;
         textAlign(CENTER, CENTER);
         textSize(32);
         text(this.formatTime(remainingTime), width / 2, height / 2);
@@ -695,9 +736,11 @@ class Evil {
     constructor() {
         this.state = EvilState.IDLE;
         this.currentFrame = 0;
+        this.inFrenzy = false;
         this.characterSize = 0.9;
         this.characterWidth = idleEvilImages[0].width * this.characterSize;
         this.characterHeight = idleEvilImages[0].height * this.characterSize;
+        this.y = CANVAS_HEIGHT - this.characterHeight;
     }
     draw() {
         switch (this.state) {
@@ -705,6 +748,7 @@ class Evil {
                 this.drawIdleEvil();
                 break;
             case EvilState.DESTROYING:
+                this.drawDestroyingEvil();
                 break;
             case EvilState.SPOTTED:
                 break;
@@ -712,6 +756,23 @@ class Evil {
     }
     drawIdleEvil() {
         this.animate(idleEvilAnimation, 0, 0 + (CANVAS_HEIGHT - this.characterHeight));
+    }
+    drawDestroyingEvil() {
+        let strength = (sin(frameCount * 0.8) * 0.2);
+        push();
+        translate(260, 440);
+        rotate(sin(frameCount * strength * 0.9) * 0.5 + 0.5);
+        image(evilWorkingArmRightImage, -35, -100, evilWorkingArmRightImage.width, evilWorkingArmRightImage.height);
+        pop();
+        if (!this.inFrenzy)
+            this.animate(evilWorkingAnimation, 0, this.y);
+        else
+            image(evilWorkingFrenzyImage, 0, this.y, this.characterWidth, this.characterHeight);
+        push();
+        translate(120, 402);
+        rotate(sin(frameCount * strength) * 0.65);
+        image(evilWorkingArmLeftImage, -25, -25, evilWorkingArmLeftImage.width, evilWorkingArmLeftImage.height);
+        pop();
     }
     animate(animation, x, y) {
         if (this.currentFrame >= animation.length) {
@@ -745,10 +806,10 @@ class Opponent {
         this.offsetY = 10;
         this.positionX = CANVAS_WIDTH - this.characterWidth + this.offsetX;
         this.positionY = CANVAS_HEIGHT - this.characterHeight + this.offsetY;
-        this.minWorkingTime = 5;
-        this.maxWorkingTime = 7;
-        this.minDistractionTime = 8;
-        this.maxDistractionTime = 12;
+        this.minWorkingTime = 1;
+        this.maxWorkingTime = 1;
+        this.minDistractionTime = 40;
+        this.maxDistractionTime = 60;
         this.minFoundTime = 1.75;
         this.maxFoundTime = 1.75;
         this.timeUntilStateChange = random(FRAMERATE * this.minWorkingTime, FRAMERATE * this.maxWorkingTime);

@@ -25,11 +25,11 @@ class Opponent {
     private positionX = CANVAS_WIDTH - this.characterWidth + this.offsetX;
     private positionY = CANVAS_HEIGHT - this.characterHeight + this.offsetY;
 
-    public minWorkingTime = 5;
-    public maxWorkingTime = 7;
+    public minWorkingTime = 1;
+    public maxWorkingTime = 1;
 
-    public minDistractionTime = 8;
-    public maxDistractionTime = 12;
+    public minDistractionTime = 40;
+    public maxDistractionTime = 60;
 
     public minFoundTime = 1.75;
     public maxFoundTime = 1.75;

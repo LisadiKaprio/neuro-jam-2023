@@ -22,6 +22,13 @@ let defaultBackground: p5.Image;
 let idleEvilImages: p5.Image[];
 let idleEvilAnimation: Frame[];
 
+let evilWorkingImages: p5.Image[];
+let evilWorkingAnimation: Frame[];
+
+let evilWorkingFrenzyImage: p5.Image;
+let evilWorkingArmLeftImage: p5.Image;
+let evilWorkingArmRightImage: p5.Image;
+
 let workingOpponentImages: p5.Image[];
 let workingOpponentAnimation: Frame[];
 
@@ -107,6 +114,30 @@ function preload() {
     },
     {
       image: idleEvilImages[3],
+      duration: SHORT_FRAME_DURATION
+    },
+  ] as Frame[];
+
+  evilWorkingImages = Array.from({ length: 3 }, (_, i) => loadImage(`${evilFilePath}/working-body-${i}.png`));
+  evilWorkingFrenzyImage = loadImage(`${evilFilePath}/working-body-frenzy.png`);
+  evilWorkingArmLeftImage = loadImage(`${evilFilePath}/working-arm-left.png`);
+  evilWorkingArmRightImage = loadImage(`${evilFilePath}/working-arm-right.png`);
+
+  evilWorkingAnimation = [
+    {
+      image: evilWorkingImages[0],
+      duration: NORMAL_FRAME_DURATION * 7
+    },
+    {
+      image: evilWorkingImages[1],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: evilWorkingImages[2],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: evilWorkingImages[1],
       duration: SHORT_FRAME_DURATION
     },
   ] as Frame[];

@@ -44,6 +44,9 @@ class BaseLevel {
         this.evil.draw();
         this.opponent.draw();
         this.countdown.draw();
+        if (this.countdown.remainingTime <= 0) {
+            stateManager.switchToLoseScreen();
+        }
 
         if (this.timePlayingThisLevel <= 5 || this.opponent.state === OpponentState.SHOCKED) { return }
 
@@ -78,23 +81,33 @@ class BaseLevel {
     }
 
     beIdle() {
+        this.evil.state = EvilState.IDLE;
         if (this.frenzyMeter > 0) {
-            this.frenzyMeter = 0;
+            this.resetFrenzyMode();
         }
     }
 
     beInteracted() {
+        this.evil.state = EvilState.DESTROYING;
         this.currentProgress += this.progressBar.progressStep;
         if (this.frenzyMeter <= this.maxFrenzyMeter) {
             this.frenzyMeter += this.frenzyMeterStep;
         }
         else if (this.frenzyMeter >= this.maxFrenzyMeter && !this.enteredFrenzyMode) {
-            this.enteredFrenzyMode = true;
+            this.initiateFrenzyMode()
         }
     }
 
     initiateFrenzyMode() {
+        this.enteredFrenzyMode = true
         this.progressBar.progressStep += this.frenzyProgressAddition;
+        this.evil.inFrenzy = true;
+    }
+
+    resetFrenzyMode() {
+        this.enteredFrenzyMode = false;
+        this.frenzyMeter = 0;
+        this.evil.inFrenzy = false;
     }
 
     mouseClicked() {

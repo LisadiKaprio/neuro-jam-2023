@@ -5,9 +5,9 @@ class Countdown {
     startCountdownTime = this.initialMinutes * 60 + this.initialSeconds;
     countdownTime = this.startCountdownTime;
     startTime = 0;
+    public remainingTime = this.countdownTime;
 
     constructor() {
-
         this.startTime = millis();
     }
 
@@ -18,6 +18,7 @@ class Countdown {
 
         // Calculate the remaining time
         let remainingTime = this.countdownTime - elapsedTime;
+        this.remainingTime = remainingTime;
 
         // Display the remaining time
         textAlign(CENTER, CENTER);
