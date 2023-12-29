@@ -1,5 +1,7 @@
 /// <reference path="./Types.ts" />
-let animFilePath = `../art/anim`
+const animFilePath = `../art/anim`
+const opponentFilePath = `../art/opponent`
+const evilFilePath = `../art/evil`
 
 let musicMenu: p5.SoundFile;
 
@@ -15,13 +17,28 @@ let buttonSoundDisabledHover: p5.Image;
 let spriteProgressEmpty: p5.Image;
 let spriteProgressFull: p5.Image;
 
-let idleCharacterImages: p5.Image[];
-let idleCharacterAnimation: Frame[];
+let defaultBackground: p5.Image;
 
-let interactedCharacterImages: p5.Image[];
-let interactedCharacterAnimation: Frame[];
+let idleEvilImages: p5.Image[];
+let idleEvilAnimation: Frame[];
 
+let workingOpponentImages: p5.Image[];
+let workingOpponentAnimation: Frame[];
+
+let workingArmImage: p5.Image;
+
+let thinkingOpponentImages: p5.Image[];
+let thinkingOpponentAnimation: Frame[];
+
+let distractedOpponentImages: p5.Image[];
 let distractedOpponentAnimation: Frame[];
+
+let foundOpponentImages: p5.Image[];
+let foundOpponentAnimation: Frame[];
+
+let foundArmImage: p5.Image;
+
+let shockedOpponentImages: p5.Image[];
 let shockedOpponentAnimation: Frame[];
 
 
@@ -39,74 +56,217 @@ function preload() {
   buttonSoundDisabled = loadImage(`../art/interface/button-sound-disabled.png`);
   buttonSoundDisabledHover = loadImage(`../art/interface/button-sound-disabled-hover.png`);
   spriteProgressEmpty = loadImage('../art/interface/progressBar-empty.png');
-  spriteProgressFull = loadImage('../art/interface//progressBar-full.png');
+  spriteProgressFull = loadImage('../art/interface/progressBar-full.png');
+  defaultBackground = loadImage('../art/bg/default.jpg');
 
-
-  idleCharacterImages = Array.from({ length: 3 }, (_, i) => loadImage(`${animFilePath}/idle-${i}.png`));
-
-  idleCharacterAnimation = [
+  idleEvilImages = Array.from({ length: 5 }, (_, i) => loadImage(`${evilFilePath}/idle-${i}.png`));
+  idleEvilAnimation = [
     {
-      image: idleCharacterImages[0],
-      duration: 10
+      image: idleEvilImages[0],
+      duration: NORMAL_FRAME_DURATION * 7
     },
     {
-      image: idleCharacterImages[1],
-      duration: 1
+      image: idleEvilImages[1],
+      duration: SHORT_FRAME_DURATION
     },
     {
-      image: idleCharacterImages[2],
-      duration: 1
+      image: idleEvilImages[2],
+      duration: SHORT_FRAME_DURATION
     },
     {
-      image: idleCharacterImages[1],
-      duration: 1
-    }
+      image: idleEvilImages[1],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: idleEvilImages[0],
+      duration: NORMAL_FRAME_DURATION * 7
+    },
+    {
+      image: idleEvilImages[1],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: idleEvilImages[2],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: idleEvilImages[1],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: idleEvilImages[0],
+      duration: NORMAL_FRAME_DURATION * 7
+    },
+    {
+      image: idleEvilImages[3],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: idleEvilImages[4],
+      duration: NORMAL_FRAME_DURATION * 9
+    },
+    {
+      image: idleEvilImages[3],
+      duration: SHORT_FRAME_DURATION
+    },
   ] as Frame[];
 
-
-  interactedCharacterImages = Array.from({ length: 3 }, (_, i) => loadImage(`${animFilePath}/interacted-${i}.png`));
-  interactedCharacterAnimation = [
+  workingOpponentImages = Array.from({ length: 2 }, (_, i) => loadImage(`${opponentFilePath}/working-body-${i}.png`));
+  workingOpponentAnimation = [
     {
-      image: idleCharacterImages[0],
-      duration: 10
+      image: workingOpponentImages[0],
+      duration: NORMAL_FRAME_DURATION
     },
     {
-      image: interactedCharacterImages[0],
-      duration: 1
+      image: workingOpponentImages[1],
+      duration: NORMAL_FRAME_DURATION
     },
-    {
-      image: interactedCharacterImages[1],
-      duration: 1
-    },
-    {
-      image: interactedCharacterImages[2],
-      duration: 1
-    },
-    {
-      image: interactedCharacterImages[1],
-      duration: 1
-    }
   ] as Frame[];
 
+  workingArmImage = loadImage(`${opponentFilePath}/working-arm-0.png`);
+
+  thinkingOpponentImages = Array.from({ length: 4 }, (_, i) => loadImage(`${opponentFilePath}/thinking-${i}.png`));
+  thinkingOpponentAnimation = [
+    {
+      image: thinkingOpponentImages[0],
+      duration: NORMAL_FRAME_DURATION * 2
+    },
+    {
+      image: thinkingOpponentImages[1],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: thinkingOpponentImages[2],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: thinkingOpponentImages[3],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: thinkingOpponentImages[3],
+      duration: 0
+    },
+  ] as Frame[];
+
+  distractedOpponentImages = Array.from({ length: 6 }, (_, i) => loadImage(`${opponentFilePath}/distracted-${i}.png`));
   distractedOpponentAnimation = [
     {
-      image: idleCharacterImages[1],
-      duration: 2
+      image: distractedOpponentImages[0],
+      duration: SHORT_FRAME_DURATION
     },
     {
-      image: idleCharacterImages[2],
-      duration: 2
+      image: distractedOpponentImages[1],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: distractedOpponentImages[0],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: distractedOpponentImages[1],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: distractedOpponentImages[0],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: distractedOpponentImages[1],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: distractedOpponentImages[0],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: distractedOpponentImages[1],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: distractedOpponentImages[0],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: distractedOpponentImages[4],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: distractedOpponentImages[5],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: distractedOpponentImages[4],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: distractedOpponentImages[0],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: distractedOpponentImages[1],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: distractedOpponentImages[0],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: distractedOpponentImages[1],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: distractedOpponentImages[0],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: distractedOpponentImages[1],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: distractedOpponentImages[0],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: distractedOpponentImages[1],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: distractedOpponentImages[0],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: distractedOpponentImages[2],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: distractedOpponentImages[3],
+      duration: SHORT_FRAME_DURATION
+    },
+  ] as Frame[];
+
+  foundOpponentImages = Array.from({ length: 2 }, (_, i) => loadImage(`${opponentFilePath}/found-body-${i}.png`));
+  foundOpponentAnimation = [
+    {
+      image: foundOpponentImages[0],
+      duration: NORMAL_FRAME_DURATION
+    },
+    {
+      image: foundOpponentImages[1],
+      duration: NORMAL_FRAME_DURATION
     }
   ]
+  foundArmImage = loadImage(`${opponentFilePath}/found-arm-0.png`);
 
+  shockedOpponentImages = Array.from({ length: 2 }, (_, i) => loadImage(`${opponentFilePath}/shocked-${i}.png`));
   shockedOpponentAnimation = [
     {
-      image: interactedCharacterImages[2],
-      duration: 100
+      image: shockedOpponentImages[0],
+      duration: NORMAL_FRAME_DURATION
     },
     {
-      image: interactedCharacterImages[2],
-      duration: 1
+      image: shockedOpponentImages[1],
+      duration: NORMAL_FRAME_DURATION
     }
   ]
 
@@ -121,7 +281,7 @@ function setup() {
 }
 
 function draw() {
-  frameRate(16)
+  frameRate(FRAMERATE)
   background(COLOR_LIGHTER_MAIN_PINK);
   stateManager.update();
   volumeControl.draw();

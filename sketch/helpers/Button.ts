@@ -43,17 +43,25 @@ class Button {
 
     draw() {
         fill(255); // Button color
-        push();
-        imageMode(CENTER);
-        translate(this.positionX + this.width / 2, this.positionY + this.height / 2);
         if (this.isMouseOver()) {
-            if (this.wobble) rotate(sin(frameCount * 0.5) * 0.1);
-            image(this.spriteHover, 0, 0, this.width, this.height)
+            wobble(
+                this.wobble,
+                CENTER,
+                this.spriteHover,
+                this.positionX,
+                this.positionY,
+                this.width,
+                this.height,
+                0.5,
+                0.1,
+                this.positionX + this.width / 2,
+                this.positionY + this.height / 2
+            )
         } else {
-            if (this.wobble) rotate(sin((frameCount * 0.1)) * 0.1);
-            image(this.spriteIdle, 0, 0, this.width, this.height)
+            wobble(this.wobble, CENTER, this.spriteIdle, this.positionX, this.positionY, this.width, this.height, 0.1, 0.1,
+                this.positionX + this.width / 2,
+                this.positionY + this.height / 2)
         }
-        pop();
     }
 
     public isMouseOver() {

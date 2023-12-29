@@ -1,15 +1,38 @@
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 640;
-let COLOR_YELLOW = `rgb(255, 238, 205)`;
-let COLOR_SATURATED_PINK = `rgb(217, 74, 114)`;
-let COLOR_DARK_PINK = `rgb(156, 62, 87)`;
-let COLOR_DARK = `rgb(156, 62, 87)`;
-let COLOR_LIGHTER_MAIN_PINK = `rgb(255, 185, 179)`;
-let COLOR_MAIN_PINK = `rgb(254, 164, 174)`;
-let COLOR_BLUE = `rgb(125, 222, 214)`;
-let COLOR_WHITE = `rgb(254, 245, 247)`;
-let COLOR_LIGHT_PINK = `rgb(251, 223, 225)`;
-let animFilePath = `../art/anim`;
+const FRAMERATE = 14;
+const NORMAL_FRAME_DURATION = 8;
+const SHORT_FRAME_DURATION = 2;
+const COLOR_YELLOW = `rgb(255, 238, 205)`;
+const COLOR_SATURATED_PINK = `rgb(217, 74, 114)`;
+const COLOR_DARK_PINK = `rgb(156, 62, 87)`;
+const COLOR_DARK = `rgb(156, 62, 87)`;
+const COLOR_LIGHTER_MAIN_PINK = `rgb(255, 185, 179)`;
+const COLOR_MAIN_PINK = `rgb(254, 164, 174)`;
+const COLOR_BLUE = `rgb(125, 222, 214)`;
+const COLOR_WHITE = `rgb(254, 245, 247)`;
+const COLOR_LIGHT_PINK = `rgb(251, 223, 225)`;
+function wobble(wobble, mode, imageToWobble, positionX, positionY, width, height, speed, wobbleSize, translateX, translateY) {
+    push();
+    imageMode(mode);
+    translate(translateX, translateY);
+    if (wobble)
+        rotate(sin(frameCount * speed) * wobbleSize);
+    image(imageToWobble, 0, 0, width, height);
+    pop();
+}
+function wobbleAnchoredOnCorner(wobble, mode, imageToWobble, positionX, positionY, width, height, speed, wobbleSize) {
+    push();
+    imageMode(mode);
+    translate(positionX, positionY);
+    if (wobble)
+        rotate(sin(frameCount * speed) * wobbleSize);
+    image(imageToWobble, 0, 0, width, height);
+    pop();
+}
+const animFilePath = `../art/anim`;
+const opponentFilePath = `../art/opponent`;
+const evilFilePath = `../art/evil`;
 let musicMenu;
 let buttonMusicIdle;
 let buttonMusicHover;
@@ -21,11 +44,20 @@ let buttonSoundDisabled;
 let buttonSoundDisabledHover;
 let spriteProgressEmpty;
 let spriteProgressFull;
-let idleCharacterImages;
-let idleCharacterAnimation;
-let interactedCharacterImages;
-let interactedCharacterAnimation;
+let defaultBackground;
+let idleEvilImages;
+let idleEvilAnimation;
+let workingOpponentImages;
+let workingOpponentAnimation;
+let workingArmImage;
+let thinkingOpponentImages;
+let thinkingOpponentAnimation;
+let distractedOpponentImages;
 let distractedOpponentAnimation;
+let foundOpponentImages;
+let foundOpponentAnimation;
+let foundArmImage;
+let shockedOpponentImages;
 let shockedOpponentAnimation;
 function preload() {
     soundFormats('mp3');
@@ -39,67 +71,210 @@ function preload() {
     buttonSoundDisabled = loadImage(`../art/interface/button-sound-disabled.png`);
     buttonSoundDisabledHover = loadImage(`../art/interface/button-sound-disabled-hover.png`);
     spriteProgressEmpty = loadImage('../art/interface/progressBar-empty.png');
-    spriteProgressFull = loadImage('../art/interface//progressBar-full.png');
-    idleCharacterImages = Array.from({ length: 3 }, (_, i) => loadImage(`${animFilePath}/idle-${i}.png`));
-    idleCharacterAnimation = [
+    spriteProgressFull = loadImage('../art/interface/progressBar-full.png');
+    defaultBackground = loadImage('../art/bg/default.jpg');
+    idleEvilImages = Array.from({ length: 5 }, (_, i) => loadImage(`${evilFilePath}/idle-${i}.png`));
+    idleEvilAnimation = [
         {
-            image: idleCharacterImages[0],
-            duration: 10
+            image: idleEvilImages[0],
+            duration: NORMAL_FRAME_DURATION * 7
         },
         {
-            image: idleCharacterImages[1],
-            duration: 1
+            image: idleEvilImages[1],
+            duration: SHORT_FRAME_DURATION
         },
         {
-            image: idleCharacterImages[2],
-            duration: 1
+            image: idleEvilImages[2],
+            duration: SHORT_FRAME_DURATION
         },
         {
-            image: idleCharacterImages[1],
-            duration: 1
-        }
+            image: idleEvilImages[1],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: idleEvilImages[0],
+            duration: NORMAL_FRAME_DURATION * 7
+        },
+        {
+            image: idleEvilImages[1],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: idleEvilImages[2],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: idleEvilImages[1],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: idleEvilImages[0],
+            duration: NORMAL_FRAME_DURATION * 7
+        },
+        {
+            image: idleEvilImages[3],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: idleEvilImages[4],
+            duration: NORMAL_FRAME_DURATION * 9
+        },
+        {
+            image: idleEvilImages[3],
+            duration: SHORT_FRAME_DURATION
+        },
     ];
-    interactedCharacterImages = Array.from({ length: 3 }, (_, i) => loadImage(`${animFilePath}/interacted-${i}.png`));
-    interactedCharacterAnimation = [
+    workingOpponentImages = Array.from({ length: 2 }, (_, i) => loadImage(`${opponentFilePath}/working-body-${i}.png`));
+    workingOpponentAnimation = [
         {
-            image: idleCharacterImages[0],
-            duration: 10
+            image: workingOpponentImages[0],
+            duration: NORMAL_FRAME_DURATION
         },
         {
-            image: interactedCharacterImages[0],
-            duration: 1
+            image: workingOpponentImages[1],
+            duration: NORMAL_FRAME_DURATION
         },
-        {
-            image: interactedCharacterImages[1],
-            duration: 1
-        },
-        {
-            image: interactedCharacterImages[2],
-            duration: 1
-        },
-        {
-            image: interactedCharacterImages[1],
-            duration: 1
-        }
     ];
+    workingArmImage = loadImage(`${opponentFilePath}/working-arm-0.png`);
+    thinkingOpponentImages = Array.from({ length: 4 }, (_, i) => loadImage(`${opponentFilePath}/thinking-${i}.png`));
+    thinkingOpponentAnimation = [
+        {
+            image: thinkingOpponentImages[0],
+            duration: NORMAL_FRAME_DURATION * 2
+        },
+        {
+            image: thinkingOpponentImages[1],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: thinkingOpponentImages[2],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: thinkingOpponentImages[3],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: thinkingOpponentImages[3],
+            duration: 0
+        },
+    ];
+    distractedOpponentImages = Array.from({ length: 6 }, (_, i) => loadImage(`${opponentFilePath}/distracted-${i}.png`));
     distractedOpponentAnimation = [
         {
-            image: idleCharacterImages[1],
-            duration: 2
+            image: distractedOpponentImages[0],
+            duration: SHORT_FRAME_DURATION
         },
         {
-            image: idleCharacterImages[2],
-            duration: 2
+            image: distractedOpponentImages[1],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: distractedOpponentImages[0],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: distractedOpponentImages[1],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: distractedOpponentImages[0],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: distractedOpponentImages[1],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: distractedOpponentImages[0],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: distractedOpponentImages[1],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: distractedOpponentImages[0],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: distractedOpponentImages[4],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: distractedOpponentImages[5],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: distractedOpponentImages[4],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: distractedOpponentImages[0],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: distractedOpponentImages[1],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: distractedOpponentImages[0],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: distractedOpponentImages[1],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: distractedOpponentImages[0],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: distractedOpponentImages[1],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: distractedOpponentImages[0],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: distractedOpponentImages[1],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: distractedOpponentImages[0],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: distractedOpponentImages[2],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: distractedOpponentImages[3],
+            duration: SHORT_FRAME_DURATION
+        },
+    ];
+    foundOpponentImages = Array.from({ length: 2 }, (_, i) => loadImage(`${opponentFilePath}/found-body-${i}.png`));
+    foundOpponentAnimation = [
+        {
+            image: foundOpponentImages[0],
+            duration: NORMAL_FRAME_DURATION
+        },
+        {
+            image: foundOpponentImages[1],
+            duration: NORMAL_FRAME_DURATION
         }
     ];
+    foundArmImage = loadImage(`${opponentFilePath}/found-arm-0.png`);
+    shockedOpponentImages = Array.from({ length: 2 }, (_, i) => loadImage(`${opponentFilePath}/shocked-${i}.png`));
     shockedOpponentAnimation = [
         {
-            image: interactedCharacterImages[2],
-            duration: 100
+            image: shockedOpponentImages[0],
+            duration: NORMAL_FRAME_DURATION
         },
         {
-            image: interactedCharacterImages[2],
-            duration: 1
+            image: shockedOpponentImages[1],
+            duration: NORMAL_FRAME_DURATION
         }
     ];
     mainMenu.preload();
@@ -111,7 +286,7 @@ function setup() {
     stateManager.setup();
 }
 function draw() {
-    frameRate(16);
+    frameRate(FRAMERATE);
     background(COLOR_LIGHTER_MAIN_PINK);
     stateManager.update();
     volumeControl.draw();
@@ -136,20 +311,12 @@ class Button {
     }
     draw() {
         fill(255);
-        push();
-        imageMode(CENTER);
-        translate(this.positionX + this.width / 2, this.positionY + this.height / 2);
         if (this.isMouseOver()) {
-            if (this.wobble)
-                rotate(sin(frameCount * 0.5) * 0.1);
-            image(this.spriteHover, 0, 0, this.width, this.height);
+            wobble(this.wobble, CENTER, this.spriteHover, this.positionX, this.positionY, this.width, this.height, 0.5, 0.1, this.positionX + this.width / 2, this.positionY + this.height / 2);
         }
         else {
-            if (this.wobble)
-                rotate(sin((frameCount * 0.1)) * 0.1);
-            image(this.spriteIdle, 0, 0, this.width, this.height);
+            wobble(this.wobble, CENTER, this.spriteIdle, this.positionX, this.positionY, this.width, this.height, 0.1, 0.1, this.positionX + this.width / 2, this.positionY + this.height / 2);
         }
-        pop();
     }
     isMouseOver() {
         if (mouseX > this.positionX &&
@@ -285,30 +452,45 @@ class BaseLevel {
         this.timePlayingThisLevel = 0;
         this.progressBarPositionX = CANVAS_WIDTH / 2 - spriteProgressEmpty.width / 2;
         this.progressBarPositionY = 100;
+        this.frenzyProgressAddition = 0.1;
+        this.frenzyMeter = 0;
+        this.frenzyMeterStep = 40;
+        this.maxFrenzyMeter = CANVAS_WIDTH + 100;
+        this.enteredFrenzyMode = false;
         this.currentFrame = 0;
         this.currentProgress = 0;
         this.level = level;
         this.progressBar = new ProgressBar(this.progressBarPositionX, this.progressBarPositionY);
+        this.countdown = new Countdown();
         this.progressBar.progressStep = 1;
-        this.progressBar.progressReductionStep = 0.5;
+        this.progressBar.progressReductionStep = 0.33;
+        this.frenzyProgressAddition = this.progressBar.progressStep;
         this.opponent = new Opponent();
+        this.evil = new Evil();
     }
     setup() {
     }
     draw() {
+        image(defaultBackground, 0, 0);
         this.timePlayingThisLevel++;
-        textAlign(LEFT, TOP);
-        text(`${this.level.codename}`, 34, 34);
-        text(`Hold Left Mouse Button to interact ^_^`, 34, 74);
+        this.drawFrenzyMeter();
         this.drawProgressBar();
+        this.evil.draw();
         this.opponent.draw();
-        if (this.timePlayingThisLevel <= 5) {
+        this.countdown.draw();
+        if (this.timePlayingThisLevel <= 5 || this.opponent.state === OpponentState.SHOCKED) {
             return;
         }
-        if (mouseIsPressed && this.opponent.state === OpponentState.WORKING) {
-            this.opponent.state = OpponentState.SHOCKED;
+        if (this.opponent.state === OpponentState.WORKING && this.currentProgress >= this.progressBar.progressReductionStep) {
+            this.currentProgress -= this.progressBar.progressReductionStep;
         }
-        if (mouseIsPressed && this.opponent.state !== OpponentState.SHOCKED) {
+        const forbiddenToProgress = this.opponent.state === OpponentState.WORKING || this.opponent.state === OpponentState.THINKING;
+        if (mouseIsPressed && forbiddenToProgress) {
+            this.frenzyMeter = 0;
+            this.opponent.state = OpponentState.SHOCKED;
+            return;
+        }
+        if (mouseIsPressed) {
             this.beInteracted();
         }
         else {
@@ -319,10 +501,27 @@ class BaseLevel {
         this.progressBar.currentProgress = this.currentProgress;
         this.progressBar.draw();
     }
+    drawFrenzyMeter() {
+        noStroke();
+        fill(0, 0, 0, 127);
+        ellipse(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, this.frenzyMeter);
+    }
     beIdle() {
+        if (this.frenzyMeter > 0) {
+            this.frenzyMeter = 0;
+        }
     }
     beInteracted() {
         this.currentProgress += this.progressBar.progressStep;
+        if (this.frenzyMeter <= this.maxFrenzyMeter) {
+            this.frenzyMeter += this.frenzyMeterStep;
+        }
+        else if (this.frenzyMeter >= this.maxFrenzyMeter && !this.enteredFrenzyMode) {
+            this.enteredFrenzyMode = true;
+        }
+    }
+    initiateFrenzyMode() {
+        this.progressBar.progressStep += this.frenzyProgressAddition;
     }
     mouseClicked() {
     }
@@ -357,6 +556,55 @@ class HelperStateManager {
     }
 }
 const stateManager = new HelperStateManager();
+class Particles {
+    constructor(x, y, possibleParticles, minVelX, maxVelX, minVelY, maxVelY) {
+        this.timeUntilNextParticle = FRAMERATE * 2;
+        this.possibleParticles = possibleParticles;
+        this.particles = [];
+        this.x = x;
+        this.y = y;
+        this.minVelX = minVelX;
+        this.maxVelX = maxVelX;
+        this.minVelY = minVelY;
+        this.maxVelY = maxVelY;
+    }
+    draw() {
+        this.timeUntilNextParticle--;
+        if (this.timeUntilNextParticle <= 0) {
+            let p = new Particle(this.x, this.y, random(this.possibleParticles), this.minVelX, this.maxVelX, this.minVelY, this.maxVelY);
+            this.particles.push(p);
+        }
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            this.particles[i].update();
+            this.particles[i].display();
+            if (this.particles[i].isOffScreen()) {
+                this.particles.splice(i, 1);
+            }
+        }
+    }
+}
+class Particle {
+    constructor(x, y, image, minVelX, maxVelX, minVelY, maxVelY) {
+        this.x = x;
+        this.y = y;
+        this.velX = random(minVelX, maxVelX);
+        this.velY = random(minVelY, maxVelY);
+        this.width = 10;
+        this.height = 10;
+    }
+    update() {
+        this.x += this.velX;
+        this.y += this.velY;
+        this.velY += 0.2;
+    }
+    display() {
+        fill(0);
+        rect(this.x, this.y, this.width, this.height);
+    }
+    isOffScreen() {
+        return this.y > height;
+    }
+}
 class VolumeControlElement {
     constructor(buttonConfig, sliderLength, maxValue, defaultValue) {
         this.button = new Button(buttonConfig);
@@ -415,23 +663,95 @@ class VolumeControlElement {
         }
     }
 }
+class Countdown {
+    constructor() {
+        this.initialMinutes = 1;
+        this.initialSeconds = 30;
+        this.startCountdownTime = this.initialMinutes * 60 + this.initialSeconds;
+        this.countdownTime = this.startCountdownTime;
+        this.startTime = 0;
+        this.startTime = millis();
+    }
+    draw() {
+        let elapsedTime = floor((millis() - this.startTime) / 1000);
+        let remainingTime = this.countdownTime - elapsedTime;
+        textAlign(CENTER, CENTER);
+        textSize(32);
+        text(this.formatTime(remainingTime), width / 2, height / 2);
+    }
+    formatTime(seconds) {
+        let minutes = floor(seconds / 60);
+        let remainingSeconds = seconds % 60;
+        return nf(minutes, 2) + ':' + nf(remainingSeconds, 2);
+    }
+}
+var EvilState;
+(function (EvilState) {
+    EvilState["IDLE"] = "idle";
+    EvilState["DESTROYING"] = "destroying";
+    EvilState["SPOTTED"] = "spotted";
+})(EvilState || (EvilState = {}));
+class Evil {
+    constructor() {
+        this.state = EvilState.IDLE;
+        this.currentFrame = 0;
+        this.characterSize = 0.9;
+        this.characterWidth = idleEvilImages[0].width * this.characterSize;
+        this.characterHeight = idleEvilImages[0].height * this.characterSize;
+    }
+    draw() {
+        switch (this.state) {
+            case EvilState.IDLE:
+                this.drawIdleEvil();
+                break;
+            case EvilState.DESTROYING:
+                break;
+            case EvilState.SPOTTED:
+                break;
+        }
+    }
+    drawIdleEvil() {
+        this.animate(idleEvilAnimation, 0, 0 + (CANVAS_HEIGHT - this.characterHeight));
+    }
+    animate(animation, x, y) {
+        if (this.currentFrame >= animation.length) {
+            this.currentFrame = 0;
+        }
+        const currentFrameImage = animation[this.currentFrame].image;
+        image(currentFrameImage, x, y, this.characterWidth, this.characterHeight);
+        if (frameCount % animation[this.currentFrame].duration === 0) {
+            this.currentFrame = (this.currentFrame + 1) % animation.length;
+        }
+    }
+}
 var OpponentState;
 (function (OpponentState) {
     OpponentState["WORKING"] = "working";
     OpponentState["THINKING"] = "thinking";
     OpponentState["DISTRACTED"] = "distracted";
+    OpponentState["FOUND"] = "found";
     OpponentState["SHOCKED"] = "shocked";
 })(OpponentState || (OpponentState = {}));
 class Opponent {
     constructor() {
         this.state = OpponentState.WORKING;
         this.currentFrame = 0;
-        this.characterSize = 1;
-        this.timeUntilStateChange = 10;
-        this.minWorkingTime = 25;
-        this.maxWorkingTime = 35;
-        this.minDistractionTime = 25;
-        this.maxDistractionTime = 45;
+        this.characterSize = 0.9;
+        this.timeBeforeGameEnd = FRAMERATE * 4;
+        this.currentTimeBeforeGameEnd = this.timeBeforeGameEnd;
+        this.characterWidth = workingOpponentImages[0].width * this.characterSize;
+        this.characterHeight = workingOpponentImages[0].height * this.characterSize;
+        this.offsetX = 50;
+        this.offsetY = 10;
+        this.positionX = CANVAS_WIDTH - this.characterWidth + this.offsetX;
+        this.positionY = CANVAS_HEIGHT - this.characterHeight + this.offsetY;
+        this.minWorkingTime = 5;
+        this.maxWorkingTime = 7;
+        this.minDistractionTime = 8;
+        this.maxDistractionTime = 12;
+        this.minFoundTime = 1.75;
+        this.maxFoundTime = 1.75;
+        this.timeUntilStateChange = random(FRAMERATE * this.minWorkingTime, FRAMERATE * this.maxWorkingTime);
     }
     draw() {
         this.timeUntilStateChange--;
@@ -443,9 +763,13 @@ class Opponent {
                 this.drawWorking();
                 break;
             case OpponentState.THINKING:
+                this.drawThinking();
                 break;
             case OpponentState.DISTRACTED:
                 this.drawDistracted();
+                break;
+            case OpponentState.FOUND:
+                this.drawFound();
                 break;
             case OpponentState.SHOCKED:
                 this.drawShocked();
@@ -455,25 +779,58 @@ class Opponent {
     handleStateChange() {
         switch (this.state) {
             case OpponentState.WORKING:
-                this.changeToState(OpponentState.DISTRACTED, 10, 20);
+                this.changeToStateAfterAnimationEnd(thinkingOpponentAnimation, OpponentState.THINKING);
+                break;
+            case OpponentState.THINKING:
+                this.changeToState(OpponentState.DISTRACTED, FRAMERATE * this.minDistractionTime, FRAMERATE * this.maxDistractionTime);
                 break;
             case OpponentState.DISTRACTED:
-                this.changeToState(OpponentState.WORKING, this.minWorkingTime, this.maxWorkingTime);
+                this.changeToState(OpponentState.FOUND, FRAMERATE * this.minFoundTime, FRAMERATE * this.maxFoundTime);
+                break;
+            case OpponentState.FOUND:
+                this.changeToState(OpponentState.WORKING, FRAMERATE * this.minWorkingTime, FRAMERATE * this.maxWorkingTime);
+                break;
+            case OpponentState.SHOCKED:
                 break;
         }
     }
     changeToState(state, minTimeUntilNextChange, maxTimeUntilNextChange) {
         this.state = state;
         this.timeUntilStateChange = random(minTimeUntilNextChange, maxTimeUntilNextChange);
+        this.currentFrame = 0;
+    }
+    changeToStateAfterAnimationEnd(animation, state) {
+        this.state = state;
+        for (const frame of animation) {
+            this.timeUntilStateChange += frame.duration;
+        }
     }
     drawWorking() {
-        this.animate(idleCharacterAnimation, this.positionX, this.positionY);
+        push();
+        translate(this.positionX + (this.characterWidth / 2) + 45, this.positionY + this.characterHeight / 2 + 31);
+        rotate(sin(frameCount * 0.5) * 0.75);
+        image(workingArmImage, -workingArmImage.width, -workingArmImage.height / 2, workingArmImage.width, workingArmImage.height);
+        pop();
+        this.animate(workingOpponentAnimation, this.positionX, this.positionY);
+    }
+    drawThinking() {
+        this.animate(thinkingOpponentAnimation, this.positionX, this.positionY);
     }
     drawDistracted() {
         this.animate(distractedOpponentAnimation, this.positionX, this.positionY);
     }
+    drawFound() {
+        push();
+        imageMode(CENTER);
+        translate(0, sin(frameCount * 0.2) * 8);
+        image(foundArmImage, this.positionX + this.characterWidth - foundArmImage.width, this.positionY + (this.characterHeight / 2) - 20);
+        pop();
+        this.animate(foundOpponentAnimation, this.positionX, this.positionY);
+    }
     drawShocked() {
-        if (this.currentFrame >= (shockedOpponentAnimation.length - 1)) {
+        this.currentTimeBeforeGameEnd -= 1;
+        if (this.currentTimeBeforeGameEnd <= 0) {
+            this.currentTimeBeforeGameEnd = this.timeBeforeGameEnd;
             stateManager.switchToLoseScreen();
         }
         this.animate(shockedOpponentAnimation, this.positionX, this.positionY);
@@ -483,7 +840,7 @@ class Opponent {
             this.currentFrame = 0;
         }
         const currentFrameImage = animation[this.currentFrame].image;
-        image(currentFrameImage, 0, 0);
+        image(currentFrameImage, x, y, this.characterWidth, this.characterHeight);
         if (frameCount % animation[this.currentFrame].duration === 0) {
             this.currentFrame = (this.currentFrame + 1) % animation.length;
         }
