@@ -42,8 +42,10 @@ let buttonSoundIdle;
 let buttonSoundHover;
 let buttonSoundDisabled;
 let buttonSoundDisabledHover;
+let spriteProgressBase;
 let spriteProgressEmpty;
 let spriteProgressFull;
+let spriteProgressFrenzy;
 let defaultBackground;
 let idleEvilImages;
 let idleEvilAnimation;
@@ -75,8 +77,10 @@ function preload() {
     buttonSoundHover = loadImage(`../art/interface/button-sound-hover.png`);
     buttonSoundDisabled = loadImage(`../art/interface/button-sound-disabled.png`);
     buttonSoundDisabledHover = loadImage(`../art/interface/button-sound-disabled-hover.png`);
-    spriteProgressEmpty = loadImage('../art/interface/progressBar-empty.png');
-    spriteProgressFull = loadImage('../art/interface/progressBar-full.png');
+    spriteProgressBase = loadImage('../art/interface/progress-bar-base.png');
+    spriteProgressEmpty = loadImage('../art/interface/progress-bar-empty.png');
+    spriteProgressFull = loadImage('../art/interface/progress-bar-full.png');
+    spriteProgressFrenzy = loadImage('../art/interface/progress-bar-frenzy.png');
     defaultBackground = loadImage('../art/bg/default.jpg');
     idleEvilImages = Array.from({ length: 5 }, (_, i) => loadImage(`${evilFilePath}/idle-${i}.png`));
     idleEvilAnimation = [
@@ -481,13 +485,13 @@ class BaseLevel {
         this.progressBarPositionY = 100;
         this.frenzyProgressAddition = 0.1;
         this.frenzyMeter = 0;
-        this.frenzyMeterStep = 40;
+        this.frenzyMeterStep = 30;
         this.maxFrenzyMeter = CANVAS_WIDTH + 100;
         this.enteredFrenzyMode = false;
         this.currentFrame = 0;
         this.currentProgress = 0;
         this.level = level;
-        this.progressBar = new ProgressBar(this.progressBarPositionX, this.progressBarPositionY);
+        this.progressBar = new ProgressBar();
         this.countdown = new Countdown();
         this.progressBar.progressStep = 1;
         this.progressBar.progressReductionStep = 0.33;
@@ -532,9 +536,11 @@ class BaseLevel {
         this.progressBar.draw();
     }
     drawFrenzyMeter() {
+        push();
         noStroke();
         fill(0, 0, 0, 127);
         ellipse(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, this.frenzyMeter);
+        pop();
     }
     beIdle() {
         this.evil.state = EvilState.IDLE;
@@ -556,11 +562,13 @@ class BaseLevel {
         this.enteredFrenzyMode = true;
         this.progressBar.progressStep += this.frenzyProgressAddition;
         this.evil.inFrenzy = true;
+        this.progressBar.inFrenzy = true;
     }
     resetFrenzyMode() {
         this.enteredFrenzyMode = false;
         this.frenzyMeter = 0;
         this.evil.inFrenzy = false;
+        this.progressBar.inFrenzy = false;
     }
     mouseClicked() {
     }
@@ -908,21 +916,25 @@ class Opponent {
     }
 }
 class ProgressBar {
-    constructor(x, y) {
+    constructor() {
         this.currentProgress = 0;
         this.maxStep = 1000;
         this.progressStep = 1;
         this.progressReductionStep = 0.5;
-        this.positionX = x;
-        this.positionY = y;
+        this.spriteBase = spriteProgressBase;
         this.spriteEmpty = spriteProgressEmpty;
         this.spriteFull = spriteProgressFull;
+        this.spriteFrenzy = spriteProgressFrenzy;
+        this.inFrenzy = false;
     }
     draw() {
-        image(this.spriteEmpty, this.positionX, this.positionY);
+        let fullPositionX = (CANVAS_WIDTH / 2) - (this.spriteFull.width / 2) + 3;
+        let fullPositionY = this.spriteBase.height / 2 - 8;
+        let spriteToShow = this.inFrenzy ? this.spriteFrenzy : this.spriteFull;
+        image(this.spriteBase, CANVAS_WIDTH / 2 - this.spriteBase.width / 2, 0);
         const progressWidth = Math.floor(this.spriteEmpty.width * (this.currentProgress / this.maxStep));
         if (progressWidth > 1) {
-            image(this.spriteFull, this.positionX, this.positionY, progressWidth, this.spriteEmpty.height, 0, 0, progressWidth, this.spriteEmpty.height);
+            image(spriteToShow, fullPositionX, fullPositionY, progressWidth, this.spriteFull.height, 0, 0, progressWidth, this.spriteFull.height);
         }
     }
 }

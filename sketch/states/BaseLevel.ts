@@ -9,7 +9,7 @@ class BaseLevel {
 
     private frenzyProgressAddition = 0.1;
     private frenzyMeter = 0;
-    private frenzyMeterStep = 40;
+    private frenzyMeterStep = 30;
     private maxFrenzyMeter = CANVAS_WIDTH + 100;
     private enteredFrenzyMode = false;
 
@@ -22,7 +22,7 @@ class BaseLevel {
 
     constructor(level: Level) {
         this.level = level;
-        this.progressBar = new ProgressBar(this.progressBarPositionX, this.progressBarPositionY);
+        this.progressBar = new ProgressBar();
         this.countdown = new Countdown();
         this.progressBar.progressStep = 1;
         this.progressBar.progressReductionStep = 0.33;
@@ -75,9 +75,11 @@ class BaseLevel {
     }
 
     drawFrenzyMeter() {
+        push();
         noStroke();
         fill(0, 0, 0, 127);
         ellipse(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, this.frenzyMeter);
+        pop();
     }
 
     beIdle() {
@@ -102,12 +104,14 @@ class BaseLevel {
         this.enteredFrenzyMode = true
         this.progressBar.progressStep += this.frenzyProgressAddition;
         this.evil.inFrenzy = true;
+        this.progressBar.inFrenzy = true;
     }
 
     resetFrenzyMode() {
         this.enteredFrenzyMode = false;
         this.frenzyMeter = 0;
         this.evil.inFrenzy = false;
+        this.progressBar.inFrenzy = false;
     }
 
     mouseClicked() {

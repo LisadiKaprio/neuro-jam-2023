@@ -14,8 +14,10 @@ let buttonSoundHover: p5.Image;
 let buttonSoundDisabled: p5.Image;
 let buttonSoundDisabledHover: p5.Image;
 
+let spriteProgressBase: p5.Image;
 let spriteProgressEmpty: p5.Image;
 let spriteProgressFull: p5.Image;
+let spriteProgressFrenzy: p5.Image;
 
 let defaultBackground: p5.Image;
 
@@ -62,8 +64,10 @@ function preload() {
   buttonSoundHover = loadImage(`../art/interface/button-sound-hover.png`);
   buttonSoundDisabled = loadImage(`../art/interface/button-sound-disabled.png`);
   buttonSoundDisabledHover = loadImage(`../art/interface/button-sound-disabled-hover.png`);
-  spriteProgressEmpty = loadImage('../art/interface/progressBar-empty.png');
-  spriteProgressFull = loadImage('../art/interface/progressBar-full.png');
+  spriteProgressBase = loadImage('../art/interface/progress-bar-base.png');
+  spriteProgressEmpty = loadImage('../art/interface/progress-bar-empty.png');
+  spriteProgressFull = loadImage('../art/interface/progress-bar-full.png');
+  spriteProgressFrenzy = loadImage('../art/interface/progress-bar-frenzy.png');
   defaultBackground = loadImage('../art/bg/default.jpg');
 
   idleEvilImages = Array.from({ length: 5 }, (_, i) => loadImage(`${evilFilePath}/idle-${i}.png`));

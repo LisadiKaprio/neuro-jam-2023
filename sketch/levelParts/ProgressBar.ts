@@ -4,22 +4,29 @@ class ProgressBar {
     public progressStep: number = 1;
     public progressReductionStep: number = 0.5;
 
-    private spriteEmpty: p5.Image;
-    private spriteFull: p5.Image;
+    private spriteBase = spriteProgressBase;
+    private spriteEmpty = spriteProgressEmpty;
+    private spriteFull = spriteProgressFull;
+    private spriteFrenzy = spriteProgressFrenzy;
+
+    public inFrenzy: boolean = false;
+
     private positionX: number;
     private positionY: number;
-    constructor(x: number, y: number) {
-        this.positionX = x;
-        this.positionY = y;
-        this.spriteEmpty = spriteProgressEmpty;
-        this.spriteFull = spriteProgressFull;
+    constructor() {
     }
 
     draw() {
-        image(this.spriteEmpty, this.positionX, this.positionY);
+
+        let fullPositionX = (CANVAS_WIDTH / 2) - (this.spriteFull.width / 2) + 3;
+        let fullPositionY = this.spriteBase.height / 2 - 8;
+
+        let spriteToShow = this.inFrenzy ? this.spriteFrenzy : this.spriteFull;
+
+        image(this.spriteBase, CANVAS_WIDTH / 2 - this.spriteBase.width / 2, 0);
         const progressWidth = Math.floor(this.spriteEmpty.width * (this.currentProgress / this.maxStep));
         if (progressWidth > 1) {
-            image(this.spriteFull, this.positionX, this.positionY, progressWidth, this.spriteEmpty.height, 0, 0, progressWidth, this.spriteEmpty.height);
+            image(spriteToShow, fullPositionX, fullPositionY, progressWidth, this.spriteFull.height, 0, 0, progressWidth, this.spriteFull.height);
         }
     }
 }
