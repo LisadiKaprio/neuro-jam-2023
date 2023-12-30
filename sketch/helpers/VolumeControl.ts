@@ -48,8 +48,6 @@ class VolumeControl {
         this.sfxVolumeControl.setup();
 
         const savedMusicVolume = localStorage.getItem('musicVolume');
-        console.log('savedMusicVolume ', savedMusicVolume)
-        console.log('savedMusicVolume ', parseFloat(savedMusicVolume))
         const savedSfxVolume = localStorage.getItem('sfxVolume');
         if (savedMusicVolume) {
             this.musicVolumeControl.slider.value(parseFloat(savedMusicVolume));
@@ -59,7 +57,6 @@ class VolumeControl {
             this.sfxVolumeControl.slider.value(parseFloat(savedSfxVolume));
             this.sfxVolume = parseFloat(savedSfxVolume);
         }
-        console.log('this.sfxVolume ', this.sfxVolume)
     }
 
     draw() {
@@ -68,7 +65,6 @@ class VolumeControl {
 
         if (this.musicVolume !== this.musicVolumeControl.currentValue) {
             this.musicVolume = this.musicVolumeControl.currentValue;
-            console.log('changed music volume to ' + this.musicVolume);
             this.changeMusicVolume(this.musicVolumeControl.currentValue);
         }
         if (this.sfxVolume !== this.sfxVolumeControl.currentValue) {

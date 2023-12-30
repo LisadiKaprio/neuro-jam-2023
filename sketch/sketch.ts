@@ -27,7 +27,11 @@ let soundPow: p5.SoundFile;
 let soundClank: p5.SoundFile;
 let soundClankTap: p5.SoundFile;
 let soundToolbox: p5.SoundFile;
+let soundToolboxTwo: p5.SoundFile;
+let soundToolboxThree: p5.SoundFile;
 
+let buttonHelpIdle: p5.Image;
+let buttonHelpHover: p5.Image;
 let buttonMusicIdle: p5.Image;
 let buttonMusicHover: p5.Image;
 let buttonMusicDisabled: p5.Image;
@@ -45,6 +49,7 @@ let spriteProgressFrenzy: p5.Image;
 let defaultBackground: p5.Image;
 
 let splashScreen: p5.Image;
+let tutorialScreenshot: p5.Image;
 
 let lostCaughtBG: p5.Image;
 let lostTimeoutBG: p5.Image;
@@ -163,7 +168,13 @@ function preload() {
   soundClankTap = loadSound(`./audio/sound-clanktap.wav`);
   //@ts-ignore
   soundToolbox = loadSound(`./audio/sound-toolbox.wav`);
+  //@ts-ignore
+  soundToolboxTwo = loadSound(`./audio/sound-toolbox-two.wav`);
+  //@ts-ignore
+  soundToolboxThree = loadSound(`./audio/sound-toolbox-three.wav`);
   customFont = loadFont('./fonts/CherryBombOne-Regular.ttf');
+  buttonHelpIdle = loadImage(`./art/interface/button-help.png`);
+  buttonHelpHover = loadImage(`./art/interface/button-help-hover.png`);
   buttonMusicIdle = loadImage(`./art/interface/button-music-idle.png`);
   buttonMusicHover = loadImage(`./art/interface/button-music-hover.png`);
   buttonMusicDisabled = loadImage(`./art/interface/button-music-disabled.png`);
@@ -178,6 +189,7 @@ function preload() {
   spriteProgressFrenzy = loadImage('./art/interface/progress-bar-frenzy.png');
   defaultBackground = loadImage('./art/bg/default.jpg');
   splashScreen = loadImage('./art/bg/splashscreen.png');
+  tutorialScreenshot = loadImage('./art/interface/tutorial-screenshots.png');
   lostCaughtBG = loadImage('./art/bg/lost-caught-bg.png');
   lostTimeoutBG = loadImage('./art/bg/lost-timeout-bg.png');
   robotIngameOne = loadImage(`${robotsFilePath}/ingame-1.png`);
@@ -530,6 +542,7 @@ function setup() {
   levelSelection.setup();
   volumeControl.setup();
   stateManager.setup();
+  tutorial.setup();
 }
 
 function draw() {
@@ -537,8 +550,10 @@ function draw() {
   background(COLOR_LIGHTER_MAIN_PINK);
   stateManager.update();
   volumeControl.draw();
+  tutorial.draw();
 }
 
 function mousePressed() {
   stateManager.mousePressed();
+  tutorial.mouseClicked();
 }

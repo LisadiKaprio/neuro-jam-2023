@@ -1,9 +1,14 @@
+/// <reference path="../helpers/Tutorial.ts" />
+
+
 class Countdown {
     initialMinutes = 1;
     initialSeconds = 30;
     startCountdownTime = this.initialMinutes * 60 + this.initialSeconds;
     countdownTime = this.startCountdownTime;
     startTime = 0;
+
+    timeToAddBecauseOfPause = 0;
 
     criticalRemainingTime = 10;
     public elapsedTime = 0;
@@ -13,7 +18,16 @@ class Countdown {
         this.startTime = millis();
     }
 
-    draw() {
+    calculate() {
+        if (tutorial.isShown) {
+            this.timeToAddBecauseOfPause = (millis() - tutorial.openTime);
+            return
+        }
+        if (this.timeToAddBecauseOfPause > 0) {
+            this.startTime += this.timeToAddBecauseOfPause;
+            this.timeToAddBecauseOfPause = 0;
+        }
+
         if (this.remainingTime <= 0) return;
         // Calculate the elapsed time
         let elapsedTime = floor((millis() - this.startTime) / 1000);
@@ -23,9 +37,12 @@ class Countdown {
         this.elapsedTime = elapsedTime;
         this.remainingTime = remainingTime;
 
+    }
+
+    draw() {
         // Display the remaining time
         push();
-        if (remainingTime <= this.criticalRemainingTime) {
+        if (this.remainingTime <= this.criticalRemainingTime) {
             strokeWeight(4);
             stroke(COLOR_DARK);
             textAlign(CENTER, CENTER);
@@ -38,7 +55,7 @@ class Countdown {
             textSize(32);
             fill(COLOR_YELLOW)
         }
-        text(formatTime(remainingTime), width / 2, spriteProgressBase.height);
+        text(formatTime(this.remainingTime), width / 2, spriteProgressBase.height);
         pop();
     }
 

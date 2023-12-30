@@ -4,7 +4,7 @@ class BaseLevel {
     private robotPositionY = CANVAS_WIDTH / 2 + 45;
     private cloud: Cloud;
 
-    private timePlayingThisLevel = 0;
+    public clickCooldownMeter = 0;
     private enteredWinning = false;
     private enteredLosing = false;
     private progressBar: ProgressBar;
@@ -51,7 +51,13 @@ class BaseLevel {
     draw() {
         this.maxFrenzyMeter = dist(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
         image(defaultBackground, 0, 0)
-        this.timePlayingThisLevel++;
+        this.countdown.calculate();
+
+        if (tutorial.isShown) {
+            this.clickCooldownMeter = 0;
+            return
+        }
+        this.clickCooldownMeter++;
 
         this.drawRobot();
 
@@ -59,7 +65,7 @@ class BaseLevel {
 
         // awkward touch screen compatibility attempt
         const playerInteractionConfirmed = (mouseIsPressed && mouseButton === LEFT || touches.length > 0)
-            && !(volumeControl.musicVolumeControl.isMouseOver() || volumeControl.sfxVolumeControl.isMouseOver())
+            && !(volumeControl.musicVolumeControl.isMouseOver() || volumeControl.sfxVolumeControl.isMouseOver() || tutorial.isMouseOver())
 
         const validPlayerInteractionConfirmed = !forbiddenToProgress
             && this.opponent.state !== OpponentState.LOST
@@ -76,7 +82,7 @@ class BaseLevel {
         this.opponent.draw();
         this.countdown.draw();
 
-        if (this.timePlayingThisLevel <= 5
+        if (this.clickCooldownMeter <= 5
             || this.opponent.state === OpponentState.SHOCKED
             || this.opponent.state === OpponentState.LOST
             || this.opponent.state === OpponentState.WON
@@ -131,9 +137,6 @@ class BaseLevel {
         } else {
             this.beIdle();
         }
-
-        console.log('progressStep ', this.progressBar.currentProgressStep)
-        console.log('progressReductionStep ', this.progressBar.progressReductionStep)
 
     }
 
@@ -210,7 +213,8 @@ class BaseLevel {
             && this.opponent.state !== OpponentState.THINKING
             && this.opponent.state !== OpponentState.LOST
             && this.opponent.state !== OpponentState.WON
-            && !(volumeControl.musicVolumeControl.isMouseOver() || volumeControl.sfxVolumeControl.isMouseOver())) {
+            && !(volumeControl.musicVolumeControl.isMouseOver() || volumeControl.sfxVolumeControl.isMouseOver())
+            && !tutorial.isMouseOver()) {
             volumeControl.playSound(random([soundEvilHa, soundEvilHehe, soundEvilHehehe]))
         }
     }

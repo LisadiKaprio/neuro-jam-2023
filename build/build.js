@@ -58,6 +58,10 @@ let soundPow;
 let soundClank;
 let soundClankTap;
 let soundToolbox;
+let soundToolboxTwo;
+let soundToolboxThree;
+let buttonHelpIdle;
+let buttonHelpHover;
 let buttonMusicIdle;
 let buttonMusicHover;
 let buttonMusicDisabled;
@@ -72,6 +76,7 @@ let spriteProgressFull;
 let spriteProgressFrenzy;
 let defaultBackground;
 let splashScreen;
+let tutorialScreenshot;
 let lostCaughtBG;
 let lostTimeoutBG;
 let idleEvilImages;
@@ -149,7 +154,11 @@ function preload() {
     soundClank = loadSound(`./audio/sound-clank.wav`);
     soundClankTap = loadSound(`./audio/sound-clanktap.wav`);
     soundToolbox = loadSound(`./audio/sound-toolbox.wav`);
+    soundToolboxTwo = loadSound(`./audio/sound-toolbox-two.wav`);
+    soundToolboxThree = loadSound(`./audio/sound-toolbox-three.wav`);
     customFont = loadFont('./fonts/CherryBombOne-Regular.ttf');
+    buttonHelpIdle = loadImage(`./art/interface/button-help.png`);
+    buttonHelpHover = loadImage(`./art/interface/button-help-hover.png`);
     buttonMusicIdle = loadImage(`./art/interface/button-music-idle.png`);
     buttonMusicHover = loadImage(`./art/interface/button-music-hover.png`);
     buttonMusicDisabled = loadImage(`./art/interface/button-music-disabled.png`);
@@ -164,6 +173,7 @@ function preload() {
     spriteProgressFrenzy = loadImage('./art/interface/progress-bar-frenzy.png');
     defaultBackground = loadImage('./art/bg/default.jpg');
     splashScreen = loadImage('./art/bg/splashscreen.png');
+    tutorialScreenshot = loadImage('./art/interface/tutorial-screenshots.png');
     lostCaughtBG = loadImage('./art/bg/lost-caught-bg.png');
     lostTimeoutBG = loadImage('./art/bg/lost-timeout-bg.png');
     robotIngameOne = loadImage(`${robotsFilePath}/ingame-1.png`);
@@ -499,15 +509,18 @@ function setup() {
     levelSelection.setup();
     volumeControl.setup();
     stateManager.setup();
+    tutorial.setup();
 }
 function draw() {
     frameRate(FRAMERATE);
     background(COLOR_LIGHTER_MAIN_PINK);
     stateManager.update();
     volumeControl.draw();
+    tutorial.draw();
 }
 function mousePressed() {
     stateManager.mousePressed();
+    tutorial.mouseClicked();
 }
 class Button {
     constructor(buttonConfig) {
@@ -620,8 +633,6 @@ class VolumeControl {
         }, 100, 5, this.sfxVolume);
         this.sfxVolumeControl.setup();
         const savedMusicVolume = localStorage.getItem('musicVolume');
-        console.log('savedMusicVolume ', savedMusicVolume);
-        console.log('savedMusicVolume ', parseFloat(savedMusicVolume));
         const savedSfxVolume = localStorage.getItem('sfxVolume');
         if (savedMusicVolume) {
             this.musicVolumeControl.slider.value(parseFloat(savedMusicVolume));
@@ -631,14 +642,12 @@ class VolumeControl {
             this.sfxVolumeControl.slider.value(parseFloat(savedSfxVolume));
             this.sfxVolume = parseFloat(savedSfxVolume);
         }
-        console.log('this.sfxVolume ', this.sfxVolume);
     }
     draw() {
         this.musicVolumeControl.draw();
         this.sfxVolumeControl.draw();
         if (this.musicVolume !== this.musicVolumeControl.currentValue) {
             this.musicVolume = this.musicVolumeControl.currentValue;
-            console.log('changed music volume to ' + this.musicVolume);
             this.changeMusicVolume(this.musicVolumeControl.currentValue);
         }
         if (this.sfxVolume !== this.sfxVolumeControl.currentValue) {
@@ -767,7 +776,7 @@ const mainMenu = new MainMenu();
 class BaseLevel {
     constructor(level) {
         this.robotPositionY = CANVAS_WIDTH / 2 + 45;
-        this.timePlayingThisLevel = 0;
+        this.clickCooldownMeter = 0;
         this.enteredWinning = false;
         this.enteredLosing = false;
         this.progressBarPositionX = CANVAS_WIDTH / 2 - spriteProgressEmpty.width / 2;
@@ -798,11 +807,16 @@ class BaseLevel {
     draw() {
         this.maxFrenzyMeter = dist(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
         image(defaultBackground, 0, 0);
-        this.timePlayingThisLevel++;
+        this.countdown.calculate();
+        if (tutorial.isShown) {
+            this.clickCooldownMeter = 0;
+            return;
+        }
+        this.clickCooldownMeter++;
         this.drawRobot();
         const forbiddenToProgress = this.opponent.state === OpponentState.WORKING || this.opponent.state === OpponentState.THINKING;
         const playerInteractionConfirmed = (mouseIsPressed && mouseButton === LEFT || touches.length > 0)
-            && !(volumeControl.musicVolumeControl.isMouseOver() || volumeControl.sfxVolumeControl.isMouseOver());
+            && !(volumeControl.musicVolumeControl.isMouseOver() || volumeControl.sfxVolumeControl.isMouseOver() || tutorial.isMouseOver());
         const validPlayerInteractionConfirmed = !forbiddenToProgress
             && this.opponent.state !== OpponentState.LOST
             && this.opponent.state !== OpponentState.WON
@@ -816,7 +830,7 @@ class BaseLevel {
             this.cloud.draw(cloudEvilAnimation, CANVAS_WIDTH / 2, this.robotPositionY);
         this.opponent.draw();
         this.countdown.draw();
-        if (this.timePlayingThisLevel <= 5
+        if (this.clickCooldownMeter <= 5
             || this.opponent.state === OpponentState.SHOCKED
             || this.opponent.state === OpponentState.LOST
             || this.opponent.state === OpponentState.WON) {
@@ -868,8 +882,6 @@ class BaseLevel {
         else {
             this.beIdle();
         }
-        console.log('progressStep ', this.progressBar.currentProgressStep);
-        console.log('progressReductionStep ', this.progressBar.progressReductionStep);
     }
     drawProgressBar() {
         this.progressBar.currentProgress = this.currentProgress;
@@ -938,7 +950,8 @@ class BaseLevel {
             && this.opponent.state !== OpponentState.THINKING
             && this.opponent.state !== OpponentState.LOST
             && this.opponent.state !== OpponentState.WON
-            && !(volumeControl.musicVolumeControl.isMouseOver() || volumeControl.sfxVolumeControl.isMouseOver())) {
+            && !(volumeControl.musicVolumeControl.isMouseOver() || volumeControl.sfxVolumeControl.isMouseOver())
+            && !tutorial.isMouseOver()) {
             volumeControl.playSound(random([soundEvilHa, soundEvilHehe, soundEvilHehehe]));
         }
     }
@@ -1026,6 +1039,79 @@ class Particle {
         return this.y > height;
     }
 }
+class Tutorial {
+    constructor() {
+        this.isShown = false;
+        this.openTime = 0;
+    }
+    setup() {
+        this.button = new Button({
+            spriteIdle: buttonHelpIdle,
+            spriteHover: buttonHelpHover,
+            positionX: 10,
+            positionY: 10,
+            sizeMultiplierOnPressed: 0.75,
+            wobble: true
+        });
+    }
+    draw() {
+        this.button.draw();
+        if (!this.isShown)
+            return;
+        push();
+        strokeWeight(5);
+        stroke(COLOR_WHITE);
+        rectMode(CENTER);
+        fill(0, 0, 0, 200);
+        rect(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, CANVAS_WIDTH - 80, CANVAS_HEIGHT - 80, 20, 20, 20, 20);
+        image(tutorialScreenshot, 0, 0);
+        translate(0, sin(frameCount * 0.1) * 1.25);
+        stroke(COLOR_DARK_PINK);
+        fill(COLOR_YELLOW);
+        textSize(30);
+        textAlign(CENTER, CENTER);
+        text("How to play", CANVAS_WIDTH / 2, 75);
+        noStroke();
+        textSize(20);
+        text("Neuro tends to lose her tools a lot while building her robots.", CANVAS_WIDTH / 2, 125);
+        text("Ruin her career while she is distracted!", CANVAS_WIDTH / 2, 155);
+        stroke(COLOR_DARK_PINK);
+        text("Hold left mouse button to reassamble the robot.", CANVAS_WIDTH / 2, CANVAS_HEIGHT - 190);
+        text("Release the button before Neuro finds the right tool and turns around.", CANVAS_WIDTH / 2, CANVAS_HEIGHT - 160);
+        noStroke();
+        text("Be careful, or you'll be thrown into Neuro's dungeon!", CANVAS_WIDTH / 2, CANVAS_HEIGHT - 120);
+        pop();
+    }
+    isMouseOver() {
+        if (mouseX > this.button.positionX &&
+            mouseX < this.button.positionX + this.button.width &&
+            mouseY > this.button.positionY &&
+            mouseY < this.button.positionY + this.button.height) {
+            return true;
+        }
+    }
+    isMouseOut() {
+        if (mouseX < this.button.positionX ||
+            mouseX > this.button.positionX + this.button.width ||
+            mouseY < this.button.positionY ||
+            mouseY > this.button.positionY + this.button.height) {
+            return true;
+        }
+    }
+    mouseClicked() {
+        if (this.isShown) {
+            console.log('isShown');
+            this.isShown = false;
+            return;
+        }
+        if (this.isMouseOver()) {
+            this.openTime = millis();
+            console.log(this.openTime);
+            this.isShown = !this.isShown;
+        }
+    }
+}
+const tutorial = new Tutorial();
 class VolumeControlElement {
     constructor(buttonConfig, sliderLength, maxValue, defaultValue) {
         this.button = new Button(buttonConfig);
@@ -1110,20 +1196,31 @@ class Countdown {
         this.startCountdownTime = this.initialMinutes * 60 + this.initialSeconds;
         this.countdownTime = this.startCountdownTime;
         this.startTime = 0;
+        this.timeToAddBecauseOfPause = 0;
         this.criticalRemainingTime = 10;
         this.elapsedTime = 0;
         this.remainingTime = this.countdownTime;
         this.startTime = millis();
     }
-    draw() {
+    calculate() {
+        if (tutorial.isShown) {
+            this.timeToAddBecauseOfPause = (millis() - tutorial.openTime);
+            return;
+        }
+        if (this.timeToAddBecauseOfPause > 0) {
+            this.startTime += this.timeToAddBecauseOfPause;
+            this.timeToAddBecauseOfPause = 0;
+        }
         if (this.remainingTime <= 0)
             return;
         let elapsedTime = floor((millis() - this.startTime) / 1000);
         let remainingTime = this.countdownTime - elapsedTime;
         this.elapsedTime = elapsedTime;
         this.remainingTime = remainingTime;
+    }
+    draw() {
         push();
-        if (remainingTime <= this.criticalRemainingTime) {
+        if (this.remainingTime <= this.criticalRemainingTime) {
             strokeWeight(4);
             stroke(COLOR_DARK);
             textAlign(CENTER, CENTER);
@@ -1137,7 +1234,7 @@ class Countdown {
             textSize(32);
             fill(COLOR_YELLOW);
         }
-        text(formatTime(remainingTime), width / 2, spriteProgressBase.height);
+        text(formatTime(this.remainingTime), width / 2, spriteProgressBase.height);
         pop();
     }
 }
@@ -1292,7 +1389,7 @@ class Opponent {
                 }
                 else {
                     this.trickedThink = random(0, 2);
-                    volumeControl.playSound(soundToolbox);
+                    volumeControl.playSound(random([soundToolbox, soundToolboxTwo, soundToolboxThree]));
                     this.changeToState(OpponentState.DISTRACTED, FRAMERATE * this.minDistractionTime, FRAMERATE * this.maxDistractionTime);
                 }
                 break;
@@ -1304,7 +1401,7 @@ class Opponent {
                 let randomizerFound = random(0, 1);
                 if (randomizerFound <= this.chanceToTrickFound && this.trickedFound > 0) {
                     this.trickedFound--;
-                    volumeControl.playSound(soundToolbox);
+                    volumeControl.playSound(random([soundToolbox, soundToolboxTwo, soundToolboxThree]));
                     this.changeToState(OpponentState.DISTRACTED, FRAMERATE * this.minDistractionTime, FRAMERATE * this.maxDistractionTime);
                 }
                 else {
@@ -1551,8 +1648,8 @@ const levelSelection = new LevelSelection();
 class LoseScreen {
     constructor() {
         this.backButton = new TextButton({
-            positionX: 100,
-            positionY: 50,
+            positionX: 200,
+            positionY: 100,
             text: 'Try again',
             onClick: () => { stateManager.switchToLevelSelection(); }
         });

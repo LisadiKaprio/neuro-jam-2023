@@ -97,7 +97,7 @@ class Opponent {
                     this.changeToState(OpponentState.WORKING, FRAMERATE * this.minWorkingTime, FRAMERATE * this.maxWorkingTime);
                 } else {
                     this.trickedThink = random(0, 2);
-                    volumeControl.playSound(soundToolbox);
+                    volumeControl.playSound(random([soundToolbox, soundToolboxTwo, soundToolboxThree]));
                     this.changeToState(OpponentState.DISTRACTED, FRAMERATE * this.minDistractionTime, FRAMERATE * this.maxDistractionTime);
                 }
                 break;
@@ -109,7 +109,7 @@ class Opponent {
                 let randomizerFound = random(0, 1);
                 if (randomizerFound <= this.chanceToTrickFound && this.trickedFound > 0) {
                     this.trickedFound--;
-                    volumeControl.playSound(soundToolbox);
+                    volumeControl.playSound(random([soundToolbox, soundToolboxTwo, soundToolboxThree]));
                     this.changeToState(OpponentState.DISTRACTED, FRAMERATE * this.minDistractionTime, FRAMERATE * this.maxDistractionTime);
                 } else {
                     this.trickedFound = random(0, 3);
