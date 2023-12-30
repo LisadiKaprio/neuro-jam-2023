@@ -108,7 +108,7 @@ class LevelSelection {
             text(`Level ${index + 1}`, button.positionX + button.width / 2, button.positionY + button.height / 2);
             fill(COLOR_SATURATED_PINK);
             textSize(14);
-            if (button.level.bestTime) text(`Best time: ${nf(button.level.bestTime, 2)}`, button.positionX + button.width / 2, button.positionY + button.height / 2 + 40)
+            if (button.level.bestTime) text(`Best time: ${formatTime(button.level.bestTime)}`, button.positionX + button.width / 2, button.positionY + button.height / 2 + 40)
         }
     }
 

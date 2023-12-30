@@ -37,6 +37,12 @@ let evilWorkingFrenzyImage: p5.Image;
 let evilWorkingArmLeftImage: p5.Image;
 let evilWorkingArmRightImage: p5.Image;
 
+let evilCaughtImages: p5.Image[];
+let evilCaughtAnimation: Frame[];
+
+let evilWonImages: p5.Image[];
+let evilWonAnimation: Frame[];
+
 let workingOpponentImages: p5.Image[];
 let workingOpponentAnimation: Frame[];
 
@@ -55,6 +61,12 @@ let foundArmImage: p5.Image;
 
 let shockedOpponentImages: p5.Image[];
 let shockedOpponentAnimation: Frame[];
+
+let lostOpponentImages: p5.Image[];
+let lostOpponentAnimation: Frame[];
+
+let wonOpponentImages: p5.Image[];
+let wonOpponentAnimation: Frame[];
 
 let robotIngameOne: p5.Image;
 let robotIngameTwo: p5.Image;
@@ -155,6 +167,30 @@ function preload() {
   evilWorkingFrenzyImage = loadImage(`${evilFilePath}/working-body-frenzy.png`);
   evilWorkingArmLeftImage = loadImage(`${evilFilePath}/working-arm-left.png`);
   evilWorkingArmRightImage = loadImage(`${evilFilePath}/working-arm-right.png`);
+
+  evilCaughtImages = Array.from({ length: 2 }, (_, i) => loadImage(`${evilFilePath}/caught-${i}.png`));
+  evilCaughtAnimation = [
+    {
+      image: evilCaughtImages[0],
+      duration: NORMAL_FRAME_DURATION
+    },
+    {
+      image: evilCaughtImages[1],
+      duration: NORMAL_FRAME_DURATION
+    }
+  ]
+
+  evilWonImages = Array.from({ length: 2 }, (_, i) => loadImage(`${evilFilePath}/won-${i}.png`));
+  evilWonAnimation = [
+    {
+      image: evilWonImages[0],
+      duration: NORMAL_FRAME_DURATION
+    },
+    {
+      image: evilWonImages[1],
+      duration: NORMAL_FRAME_DURATION
+    }
+  ]
 
   evilWorkingAnimation = [
     {
@@ -330,6 +366,30 @@ function preload() {
     },
     {
       image: shockedOpponentImages[1],
+      duration: NORMAL_FRAME_DURATION
+    }
+  ]
+
+  lostOpponentImages = Array.from({ length: 2 }, (_, i) => loadImage(`${opponentFilePath}/lost-${i}.png`));
+  lostOpponentAnimation = [
+    {
+      image: lostOpponentImages[0],
+      duration: NORMAL_FRAME_DURATION
+    },
+    {
+      image: lostOpponentImages[1],
+      duration: NORMAL_FRAME_DURATION
+    }
+  ]
+
+  wonOpponentImages = Array.from({ length: 2 }, (_, i) => loadImage(`${opponentFilePath}/won-${i}.png`));
+  wonOpponentAnimation = [
+    {
+      image: wonOpponentImages[0],
+      duration: NORMAL_FRAME_DURATION
+    },
+    {
+      image: wonOpponentImages[1],
       duration: NORMAL_FRAME_DURATION
     }
   ]

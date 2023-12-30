@@ -1,7 +1,8 @@
 enum EvilState {
     IDLE = 'idle',
     DESTROYING = 'destroying',
-    SPOTTED = 'spotted',
+    CAUGHT = 'caught',
+    WON = 'won',
 }
 
 class Evil {
@@ -25,14 +26,17 @@ class Evil {
             case EvilState.DESTROYING:
                 this.drawDestroyingEvil();
                 break;
-            case EvilState.SPOTTED:
-                // this.drawSpottedEvil();
+            case EvilState.CAUGHT:
+                this.drawCaughtEvil();
+                break;
+            case EvilState.WON:
+                this.drawWonEvil();
                 break;
         }
     }
 
     drawIdleEvil() {
-        this.animate(idleEvilAnimation, 0, 0 + (CANVAS_HEIGHT - this.characterHeight));
+        this.animate(idleEvilAnimation, 0, this.y);
     }
 
     drawDestroyingEvil() {
@@ -52,6 +56,14 @@ class Evil {
         rotate(sin(frameCount * strength) * 0.65);
         image(evilWorkingArmLeftImage, -25, -25, evilWorkingArmLeftImage.width, evilWorkingArmLeftImage.height)
         pop();
+    }
+
+    drawCaughtEvil() {
+        this.animate(evilCaughtAnimation, 0, this.y);
+    }
+
+    drawWonEvil() {
+        this.animate(evilWonAnimation, 0, this.y);
     }
 
     animate(animation: Frame[], x: number, y: number) {

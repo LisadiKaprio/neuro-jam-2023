@@ -8,6 +8,8 @@ enum OpponentState {
     DISTRACTED = 'distracted',
     FOUND = 'found',
     SHOCKED = 'shocked',
+    LOST = 'lost',
+    WON = 'won'
 }
 
 class Opponent {
@@ -62,6 +64,12 @@ class Opponent {
             case OpponentState.SHOCKED:
                 this.drawShocked();
                 break;
+            case OpponentState.LOST:
+                this.drawLost();
+                break;
+            case OpponentState.WON:
+                this.drawWon();
+                break;
         }
     }
 
@@ -80,6 +88,10 @@ class Opponent {
                 this.changeToState(OpponentState.WORKING, FRAMERATE * this.minWorkingTime, FRAMERATE * this.maxWorkingTime);
                 break;
             case OpponentState.SHOCKED:
+                break;
+            case OpponentState.LOST:
+                break;
+            case OpponentState.WON:
                 break;
         }
     }
@@ -130,6 +142,24 @@ class Opponent {
             stateManager.switchToLoseScreen(lostCaughtBG, 'You got caught!');
         }
         this.animate(shockedOpponentAnimation, this.positionX, this.positionY)
+    }
+
+    drawLost() {
+        this.currentTimeBeforeGameEnd -= 1;
+        if (this.currentTimeBeforeGameEnd <= 0) {
+            this.currentTimeBeforeGameEnd = this.timeBeforeGameEnd
+            stateManager.switchToLevelSelection();
+        }
+        this.animate(lostOpponentAnimation, this.positionX, this.positionY)
+    }
+
+    drawWon() {
+        this.currentTimeBeforeGameEnd -= 1;
+        if (this.currentTimeBeforeGameEnd <= 0) {
+            this.currentTimeBeforeGameEnd = this.timeBeforeGameEnd
+            stateManager.switchToLoseScreen(lostTimeoutBG, 'Time ran out!');
+        }
+        this.animate(wonOpponentAnimation, this.positionX, this.positionY)
     }
 
     animate(animation: Frame[], x: number, y: number) {

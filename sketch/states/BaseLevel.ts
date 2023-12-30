@@ -1,6 +1,7 @@
 /// <reference path="../helpers/HelperStateManager.ts" />
 class BaseLevel {
     private timePlayingThisLevel = 0;
+    private enteredWinning = false;
     private progressBar: ProgressBar;
     private countdown: Countdown;
     private progressBarPositionX = CANVAS_WIDTH / 2 - spriteProgressEmpty.width / 2;
@@ -56,13 +57,17 @@ class BaseLevel {
         this.opponent.draw();
         this.countdown.draw();
 
-        if (this.currentProgress >= this.progressBar.maxStep) {
+        if (this.currentProgress >= this.progressBar.maxStep && !this.enteredWinning) {
+            this.enteredWinning = true;
             localStorage.setItem(`${this.level.codename}-highscore`, this.countdown.elapsedTime.toString());
-            stateManager.switchToLevelSelection();
+            this.evil.state = EvilState.WON;
+            this.opponent.state = OpponentState.LOST;
         }
 
         if (this.countdown.remainingTime <= 0) {
-            stateManager.switchToLoseScreen(lostTimeoutBG, 'You ran out of time!');
+            this.resetFrenzyMode();
+            this.evil.state = EvilState.IDLE;
+            this.opponent.state = OpponentState.WON;
         }
 
         if (this.timePlayingThisLevel <= 5 || this.opponent.state === OpponentState.SHOCKED) { return }
@@ -75,6 +80,7 @@ class BaseLevel {
         if (mouseIsPressed && forbiddenToProgress) {
             this.frenzyMeter = 0;
             this.opponent.state = OpponentState.SHOCKED;
+            this.evil.state = EvilState.CAUGHT;
             return
         }
 

@@ -30,6 +30,11 @@ function wobbleAnchoredOnCorner(wobble, mode, imageToWobble, positionX, position
     image(imageToWobble, 0, 0, width, height);
     pop();
 }
+function formatTime(seconds) {
+    let minutes = floor(seconds / 60);
+    let remainingSeconds = seconds % 60;
+    return nf(minutes, 2) + ':' + nf(remainingSeconds, 2);
+}
 const animFilePath = `../art/anim`;
 const opponentFilePath = `../art/opponent`;
 const evilFilePath = `../art/evil`;
@@ -58,6 +63,10 @@ let evilWorkingAnimation;
 let evilWorkingFrenzyImage;
 let evilWorkingArmLeftImage;
 let evilWorkingArmRightImage;
+let evilCaughtImages;
+let evilCaughtAnimation;
+let evilWonImages;
+let evilWonAnimation;
 let workingOpponentImages;
 let workingOpponentAnimation;
 let workingArmImage;
@@ -70,6 +79,10 @@ let foundOpponentAnimation;
 let foundArmImage;
 let shockedOpponentImages;
 let shockedOpponentAnimation;
+let lostOpponentImages;
+let lostOpponentAnimation;
+let wonOpponentImages;
+let wonOpponentAnimation;
 let robotIngameOne;
 let robotIngameTwo;
 let robotIngameThree;
@@ -162,6 +175,28 @@ function preload() {
     evilWorkingFrenzyImage = loadImage(`${evilFilePath}/working-body-frenzy.png`);
     evilWorkingArmLeftImage = loadImage(`${evilFilePath}/working-arm-left.png`);
     evilWorkingArmRightImage = loadImage(`${evilFilePath}/working-arm-right.png`);
+    evilCaughtImages = Array.from({ length: 2 }, (_, i) => loadImage(`${evilFilePath}/caught-${i}.png`));
+    evilCaughtAnimation = [
+        {
+            image: evilCaughtImages[0],
+            duration: NORMAL_FRAME_DURATION
+        },
+        {
+            image: evilCaughtImages[1],
+            duration: NORMAL_FRAME_DURATION
+        }
+    ];
+    evilWonImages = Array.from({ length: 2 }, (_, i) => loadImage(`${evilFilePath}/won-${i}.png`));
+    evilWonAnimation = [
+        {
+            image: evilWonImages[0],
+            duration: NORMAL_FRAME_DURATION
+        },
+        {
+            image: evilWonImages[1],
+            duration: NORMAL_FRAME_DURATION
+        }
+    ];
     evilWorkingAnimation = [
         {
             image: evilWorkingImages[0],
@@ -330,6 +365,28 @@ function preload() {
         },
         {
             image: shockedOpponentImages[1],
+            duration: NORMAL_FRAME_DURATION
+        }
+    ];
+    lostOpponentImages = Array.from({ length: 2 }, (_, i) => loadImage(`${opponentFilePath}/lost-${i}.png`));
+    lostOpponentAnimation = [
+        {
+            image: lostOpponentImages[0],
+            duration: NORMAL_FRAME_DURATION
+        },
+        {
+            image: lostOpponentImages[1],
+            duration: NORMAL_FRAME_DURATION
+        }
+    ];
+    wonOpponentImages = Array.from({ length: 2 }, (_, i) => loadImage(`${opponentFilePath}/won-${i}.png`));
+    wonOpponentAnimation = [
+        {
+            image: wonOpponentImages[0],
+            duration: NORMAL_FRAME_DURATION
+        },
+        {
+            image: wonOpponentImages[1],
             duration: NORMAL_FRAME_DURATION
         }
     ];
@@ -559,6 +616,7 @@ const mainMenu = new MainMenu();
 class BaseLevel {
     constructor(level) {
         this.timePlayingThisLevel = 0;
+        this.enteredWinning = false;
         this.progressBarPositionX = CANVAS_WIDTH / 2 - spriteProgressEmpty.width / 2;
         this.progressBarPositionY = 100;
         this.frenzyProgressAddition = 0.1;
@@ -594,12 +652,16 @@ class BaseLevel {
         this.evil.draw();
         this.opponent.draw();
         this.countdown.draw();
-        if (this.currentProgress >= this.progressBar.maxStep) {
+        if (this.currentProgress >= this.progressBar.maxStep && !this.enteredWinning) {
+            this.enteredWinning = true;
             localStorage.setItem(`${this.level.codename}-highscore`, this.countdown.elapsedTime.toString());
-            stateManager.switchToLevelSelection();
+            this.evil.state = EvilState.WON;
+            this.opponent.state = OpponentState.LOST;
         }
         if (this.countdown.remainingTime <= 0) {
-            stateManager.switchToLoseScreen(lostTimeoutBG, 'You ran out of time!');
+            this.resetFrenzyMode();
+            this.evil.state = EvilState.IDLE;
+            this.opponent.state = OpponentState.WON;
         }
         if (this.timePlayingThisLevel <= 5 || this.opponent.state === OpponentState.SHOCKED) {
             return;
@@ -611,6 +673,7 @@ class BaseLevel {
         if (mouseIsPressed && forbiddenToProgress) {
             this.frenzyMeter = 0;
             this.opponent.state = OpponentState.SHOCKED;
+            this.evil.state = EvilState.CAUGHT;
             return;
         }
         if (mouseIsPressed) {
@@ -814,6 +877,8 @@ class Countdown {
         this.startTime = millis();
     }
     draw() {
+        if (this.remainingTime <= 0)
+            return;
         let elapsedTime = floor((millis() - this.startTime) / 1000);
         let remainingTime = this.countdownTime - elapsedTime;
         this.elapsedTime = elapsedTime;
@@ -833,20 +898,16 @@ class Countdown {
             textSize(32);
             fill(COLOR_YELLOW);
         }
-        text(this.formatTime(remainingTime), width / 2, spriteProgressBase.height);
+        text(formatTime(remainingTime), width / 2, spriteProgressBase.height);
         pop();
-    }
-    formatTime(seconds) {
-        let minutes = floor(seconds / 60);
-        let remainingSeconds = seconds % 60;
-        return nf(minutes, 2) + ':' + nf(remainingSeconds, 2);
     }
 }
 var EvilState;
 (function (EvilState) {
     EvilState["IDLE"] = "idle";
     EvilState["DESTROYING"] = "destroying";
-    EvilState["SPOTTED"] = "spotted";
+    EvilState["CAUGHT"] = "caught";
+    EvilState["WON"] = "won";
 })(EvilState || (EvilState = {}));
 class Evil {
     constructor() {
@@ -866,12 +927,16 @@ class Evil {
             case EvilState.DESTROYING:
                 this.drawDestroyingEvil();
                 break;
-            case EvilState.SPOTTED:
+            case EvilState.CAUGHT:
+                this.drawCaughtEvil();
+                break;
+            case EvilState.WON:
+                this.drawWonEvil();
                 break;
         }
     }
     drawIdleEvil() {
-        this.animate(idleEvilAnimation, 0, 0 + (CANVAS_HEIGHT - this.characterHeight));
+        this.animate(idleEvilAnimation, 0, this.y);
     }
     drawDestroyingEvil() {
         let strength = (sin(frameCount * 0.8) * 0.2);
@@ -889,6 +954,12 @@ class Evil {
         rotate(sin(frameCount * strength) * 0.65);
         image(evilWorkingArmLeftImage, -25, -25, evilWorkingArmLeftImage.width, evilWorkingArmLeftImage.height);
         pop();
+    }
+    drawCaughtEvil() {
+        this.animate(evilCaughtAnimation, 0, this.y);
+    }
+    drawWonEvil() {
+        this.animate(evilWonAnimation, 0, this.y);
     }
     animate(animation, x, y) {
         if (this.currentFrame >= animation.length) {
@@ -908,6 +979,8 @@ var OpponentState;
     OpponentState["DISTRACTED"] = "distracted";
     OpponentState["FOUND"] = "found";
     OpponentState["SHOCKED"] = "shocked";
+    OpponentState["LOST"] = "lost";
+    OpponentState["WON"] = "won";
 })(OpponentState || (OpponentState = {}));
 class Opponent {
     constructor() {
@@ -951,6 +1024,12 @@ class Opponent {
             case OpponentState.SHOCKED:
                 this.drawShocked();
                 break;
+            case OpponentState.LOST:
+                this.drawLost();
+                break;
+            case OpponentState.WON:
+                this.drawWon();
+                break;
         }
     }
     handleStateChange() {
@@ -968,6 +1047,10 @@ class Opponent {
                 this.changeToState(OpponentState.WORKING, FRAMERATE * this.minWorkingTime, FRAMERATE * this.maxWorkingTime);
                 break;
             case OpponentState.SHOCKED:
+                break;
+            case OpponentState.LOST:
+                break;
+            case OpponentState.WON:
                 break;
         }
     }
@@ -1011,6 +1094,22 @@ class Opponent {
             stateManager.switchToLoseScreen(lostCaughtBG, 'You got caught!');
         }
         this.animate(shockedOpponentAnimation, this.positionX, this.positionY);
+    }
+    drawLost() {
+        this.currentTimeBeforeGameEnd -= 1;
+        if (this.currentTimeBeforeGameEnd <= 0) {
+            this.currentTimeBeforeGameEnd = this.timeBeforeGameEnd;
+            stateManager.switchToLevelSelection();
+        }
+        this.animate(lostOpponentAnimation, this.positionX, this.positionY);
+    }
+    drawWon() {
+        this.currentTimeBeforeGameEnd -= 1;
+        if (this.currentTimeBeforeGameEnd <= 0) {
+            this.currentTimeBeforeGameEnd = this.timeBeforeGameEnd;
+            stateManager.switchToLoseScreen(lostTimeoutBG, 'Time ran out!');
+        }
+        this.animate(wonOpponentAnimation, this.positionX, this.positionY);
     }
     animate(animation, x, y) {
         if (this.currentFrame >= animation.length) {
@@ -1126,7 +1225,7 @@ class LevelSelection {
             fill(COLOR_SATURATED_PINK);
             textSize(14);
             if (button.level.bestTime)
-                text(`Best time: ${nf(button.level.bestTime, 2)}`, button.positionX + button.width / 2, button.positionY + button.height / 2 + 40);
+                text(`Best time: ${formatTime(button.level.bestTime)}`, button.positionX + button.width / 2, button.positionY + button.height / 2 + 40);
         }
     }
     mouseClicked() {

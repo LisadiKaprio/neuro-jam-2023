@@ -14,6 +14,7 @@ class Countdown {
     }
 
     draw() {
+        if (this.remainingTime <= 0) return;
         // Calculate the elapsed time
         let elapsedTime = floor((millis() - this.startTime) / 1000);
 
@@ -37,14 +38,8 @@ class Countdown {
             textSize(32);
             fill(COLOR_YELLOW)
         }
-        text(this.formatTime(remainingTime), width / 2, spriteProgressBase.height);
+        text(formatTime(remainingTime), width / 2, spriteProgressBase.height);
         pop();
-    }
-
-    formatTime(seconds: number): string {
-        let minutes = floor(seconds / 60);
-        let remainingSeconds = seconds % 60;
-        return nf(minutes, 2) + ':' + nf(remainingSeconds, 2);
     }
 
 }

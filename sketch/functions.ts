@@ -15,3 +15,9 @@ function wobbleAnchoredOnCorner(wobble: boolean, mode: p5.IMAGE_MODE, imageToWob
     image(imageToWobble, 0, 0, width, height)
     pop();
 }
+
+function formatTime(seconds: number): string {
+    let minutes = floor(seconds / 60);
+    let remainingSeconds = seconds % 60;
+    return nf(minutes, 2) + ':' + nf(remainingSeconds, 2);
+}
