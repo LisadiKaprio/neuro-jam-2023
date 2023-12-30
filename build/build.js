@@ -33,6 +33,8 @@ function wobbleAnchoredOnCorner(wobble, mode, imageToWobble, positionX, position
 const animFilePath = `../art/anim`;
 const opponentFilePath = `../art/opponent`;
 const evilFilePath = `../art/evil`;
+const robotsFilePath = `../art/robots`;
+let customFont;
 let musicMenu;
 let buttonMusicIdle;
 let buttonMusicHover;
@@ -47,6 +49,8 @@ let spriteProgressEmpty;
 let spriteProgressFull;
 let spriteProgressFrenzy;
 let defaultBackground;
+let lostCaughtBG;
+let lostTimeoutBG;
 let idleEvilImages;
 let idleEvilAnimation;
 let evilWorkingImages;
@@ -66,9 +70,19 @@ let foundOpponentAnimation;
 let foundArmImage;
 let shockedOpponentImages;
 let shockedOpponentAnimation;
+let robotIngameOne;
+let robotIngameTwo;
+let robotIngameThree;
+let robotLoseOne;
+let robotLoseTwo;
+let robotLoseThree;
+let robotWinOne;
+let robotWinTwo;
+let robotWinThree;
 function preload() {
     soundFormats('mp3');
     musicMenu = loadSound(`../audio/music-little-think.mp3`);
+    customFont = loadFont('../fonts/CherryBombOne-Regular.ttf');
     buttonMusicIdle = loadImage(`../art/interface/button-music-idle.png`);
     buttonMusicHover = loadImage(`../art/interface/button-music-hover.png`);
     buttonMusicDisabled = loadImage(`../art/interface/button-music-disabled.png`);
@@ -82,6 +96,17 @@ function preload() {
     spriteProgressFull = loadImage('../art/interface/progress-bar-full.png');
     spriteProgressFrenzy = loadImage('../art/interface/progress-bar-frenzy.png');
     defaultBackground = loadImage('../art/bg/default.jpg');
+    lostCaughtBG = loadImage('../art/bg/lost-caught-bg.png');
+    lostTimeoutBG = loadImage('../art/bg/lost-timeout-bg.png');
+    robotIngameOne = loadImage(`${robotsFilePath}/ingame-1.png`);
+    robotIngameTwo = loadImage(`${robotsFilePath}/ingame-2.png`);
+    robotIngameThree = loadImage(`${robotsFilePath}/ingame-3.png`);
+    robotLoseOne = loadImage(`${robotsFilePath}/lose-1.png`);
+    robotLoseTwo = loadImage(`${robotsFilePath}/lose-2.png`);
+    robotLoseThree = loadImage(`${robotsFilePath}/lose-3.png`);
+    robotWinOne = loadImage(`${robotsFilePath}/win-1.png`);
+    robotWinTwo = loadImage(`${robotsFilePath}/win-2.png`);
+    robotWinThree = loadImage(`${robotsFilePath}/win-3.png`);
     idleEvilImages = Array.from({ length: 5 }, (_, i) => loadImage(`${evilFilePath}/idle-${i}.png`));
     idleEvilAnimation = [
         {
@@ -311,6 +336,7 @@ function preload() {
     mainMenu.preload();
 }
 function setup() {
+    textFont(customFont);
     createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
     background(COLOR_LIGHTER_MAIN_PINK);
     volumeControl.setup();
@@ -365,7 +391,7 @@ class Button {
             return true;
         }
     }
-    mousePressed(whatHappens) {
+    mouseClicked(whatHappens) {
         if (this.isMouseOver()) {
             image(this.spriteHover, this.positionX, this.positionY, this.width * this.size * this.sizeMultiplierOnPressed, this.height * this.size * this.sizeMultiplierOnPressed);
         }
@@ -447,12 +473,74 @@ class VolumeControl {
     }
 }
 const volumeControl = new VolumeControl();
+class TextButton {
+    constructor(buttonConfig) {
+        this.currentTextSize = 20;
+        this.positionX = buttonConfig.positionX || 0;
+        this.positionY = buttonConfig.positionY || 0;
+        this.text = buttonConfig.text;
+        this.onClick = buttonConfig.onClick;
+    }
+    draw() {
+        push();
+        if (this.isMouseOver()) {
+            strokeWeight(3);
+            stroke(COLOR_WHITE);
+            if (mousePressed)
+                textSize(20 * 1.1);
+            else
+                textSize(20);
+            fill(COLOR_SATURATED_PINK);
+        }
+        else {
+            strokeWeight(2);
+            stroke(COLOR_MAIN_PINK);
+            textSize(20);
+            fill(COLOR_WHITE);
+        }
+        text(this.text, this.positionX, this.positionY);
+        pop();
+    }
+    isMouseOver() {
+        const x = this.positionX - textWidth(this.text) / 2;
+        const y = this.positionY - this.currentTextSize / 2;
+        if (mouseX > x &&
+            mouseX < x + textWidth(this.text) * 1.1 &&
+            mouseY > y &&
+            mouseY < y + this.currentTextSize * 1.25) {
+            return true;
+        }
+    }
+    isMouseOut() {
+        const x = this.positionX - textWidth(this.text) / 2;
+        const y = this.positionY - this.currentTextSize / 2;
+        if (mouseX < x ||
+            mouseX > x + textWidth(this.text) * 1.1 ||
+            mouseY < y ||
+            mouseY > y + this.currentTextSize * 1.25) {
+            return true;
+        }
+    }
+    mouseClicked() {
+        if (this.isMouseOver()) {
+            this.onClick();
+        }
+    }
+}
 class MainMenu {
     constructor() {
         this.buttonX = 100;
         this.buttonY = 200;
         this.buttonWidth = 200;
         this.buttonHeight = 50;
+        this.startGameButton = new TextButton({
+            positionX: this.buttonX,
+            positionY: this.buttonY,
+            text: 'Start Game',
+            onClick: () => {
+                stateManager.switchToLevelSelection();
+            }
+        });
     }
     preload() {
     }
@@ -461,20 +549,10 @@ class MainMenu {
         volumeControl.playMusic(musicMenu);
     }
     draw() {
-        fill(COLOR_WHITE);
-        rect(this.buttonX, this.buttonY, this.buttonWidth, this.buttonHeight);
-        fill(0);
-        textSize(20);
-        textAlign(CENTER, CENTER);
-        text("Start Game", this.buttonX + this.buttonWidth / 2, this.buttonY + this.buttonHeight / 2);
+        this.startGameButton.draw();
     }
     mouseClicked() {
-        if (mouseX > this.buttonX &&
-            mouseX < this.buttonX + this.buttonWidth &&
-            mouseY > this.buttonY &&
-            mouseY < this.buttonY + this.buttonHeight) {
-            stateManager.switchToLevelSelection();
-        }
+        this.startGameButton.mouseClicked();
     }
 }
 const mainMenu = new MainMenu();
@@ -498,19 +576,30 @@ class BaseLevel {
         this.frenzyProgressAddition = this.progressBar.progressStep;
         this.opponent = new Opponent();
         this.evil = new Evil();
+        this.robotIngameImage = robotIngameOne;
+        this.robotLoseImage = robotLoseOne;
+        this.robotWinImage = robotWinOne;
     }
     setup() {
     }
     draw() {
         image(defaultBackground, 0, 0);
         this.timePlayingThisLevel++;
+        push();
+        imageMode(CENTER);
+        image(this.robotIngameImage, CANVAS_WIDTH / 2, CANVAS_WIDTH / 2 + 45);
+        pop();
         this.drawFrenzyMeter();
         this.drawProgressBar();
         this.evil.draw();
         this.opponent.draw();
         this.countdown.draw();
+        if (this.currentProgress >= this.progressBar.maxStep) {
+            localStorage.setItem(`${this.level.codename}-highscore`, this.countdown.elapsedTime.toString());
+            stateManager.switchToLevelSelection();
+        }
         if (this.countdown.remainingTime <= 0) {
-            stateManager.switchToLoseScreen();
+            stateManager.switchToLoseScreen(lostTimeoutBG, 'You ran out of time!');
         }
         if (this.timePlayingThisLevel <= 5 || this.opponent.state === OpponentState.SHOCKED) {
             return;
@@ -594,8 +683,10 @@ class HelperStateManager {
         this.currentScene = levelSelection;
         levelSelection.setup();
     }
-    switchToLoseScreen() {
-        this.currentScene = introSplashScreen;
+    switchToLoseScreen(image, text) {
+        loseScreen.bg = image;
+        loseScreen.text = text;
+        this.currentScene = loseScreen;
         introSplashScreen.setup();
     }
     initiateLevel(level) {
@@ -717,16 +808,33 @@ class Countdown {
         this.startCountdownTime = this.initialMinutes * 60 + this.initialSeconds;
         this.countdownTime = this.startCountdownTime;
         this.startTime = 0;
+        this.criticalRemainingTime = 10;
+        this.elapsedTime = 0;
         this.remainingTime = this.countdownTime;
         this.startTime = millis();
     }
     draw() {
         let elapsedTime = floor((millis() - this.startTime) / 1000);
         let remainingTime = this.countdownTime - elapsedTime;
+        this.elapsedTime = elapsedTime;
         this.remainingTime = remainingTime;
-        textAlign(CENTER, CENTER);
-        textSize(32);
-        text(this.formatTime(remainingTime), width / 2, height / 2);
+        push();
+        if (remainingTime <= this.criticalRemainingTime) {
+            strokeWeight(4);
+            stroke(COLOR_DARK);
+            textAlign(CENTER, CENTER);
+            textSize(sin(frameCount * 0.3) * 8 + 32);
+            fill(COLOR_BLUE);
+        }
+        else {
+            strokeWeight(4);
+            stroke(COLOR_DARK_PINK);
+            textAlign(CENTER, CENTER);
+            textSize(32);
+            fill(COLOR_YELLOW);
+        }
+        text(this.formatTime(remainingTime), width / 2, spriteProgressBase.height);
+        pop();
     }
     formatTime(seconds) {
         let minutes = floor(seconds / 60);
@@ -814,11 +922,11 @@ class Opponent {
         this.offsetY = 10;
         this.positionX = CANVAS_WIDTH - this.characterWidth + this.offsetX;
         this.positionY = CANVAS_HEIGHT - this.characterHeight + this.offsetY;
-        this.minWorkingTime = 1;
-        this.maxWorkingTime = 1;
-        this.minDistractionTime = 40;
-        this.maxDistractionTime = 60;
-        this.minFoundTime = 1.75;
+        this.minWorkingTime = 4;
+        this.maxWorkingTime = 6;
+        this.minDistractionTime = 5;
+        this.maxDistractionTime = 7;
+        this.minFoundTime = 1.35;
         this.maxFoundTime = 1.75;
         this.timeUntilStateChange = random(FRAMERATE * this.minWorkingTime, FRAMERATE * this.maxWorkingTime);
     }
@@ -900,7 +1008,7 @@ class Opponent {
         this.currentTimeBeforeGameEnd -= 1;
         if (this.currentTimeBeforeGameEnd <= 0) {
             this.currentTimeBeforeGameEnd = this.timeBeforeGameEnd;
-            stateManager.switchToLoseScreen();
+            stateManager.switchToLoseScreen(lostCaughtBG, 'You got caught!');
         }
         this.animate(shockedOpponentAnimation, this.positionX, this.positionY);
     }
@@ -946,18 +1054,34 @@ class LevelSelection {
         this.buttonHeight = 50;
         this.levelsArray = [
             {
-                codename: 'Fire',
-                difficulty: 4
+                codename: 'level-one',
+                isCompleted: false,
+                robotIngameImage: robotIngameOne,
+                robotLoseImage: robotLoseOne,
+                robotWinImage: robotWinOne,
+                maxWorkingTimeMultiplier: 0.9,
             },
             {
-                codename: 'Water'
+                codename: 'level-two',
+                isCompleted: false,
+                robotIngameImage: robotIngameTwo,
+                robotLoseImage: robotLoseTwo,
+                robotWinImage: robotWinTwo,
+                progressStepMultiplier: .97,
+                progressReductionStepMultiplier: 1.05,
             },
             {
-                codename: 'Earth'
-            },
-            {
-                codename: 'Wind'
-            },
+                codename: 'level-three',
+                isCompleted: false,
+                robotIngameImage: robotIngameThree,
+                robotLoseImage: robotLoseThree,
+                robotWinImage: robotWinThree,
+                progressStepMultiplier: 2,
+                progressReductionStepMultiplier: 0.25,
+                minWorkingTimeMultiplier: 0.25,
+                maxWorkingTimeMultiplier: 1.1,
+                minFoundTimeMultiplier: 0.5,
+            }
         ];
         this.levelArrayButtons = [
             {
@@ -981,25 +1105,28 @@ class LevelSelection {
                 height: 50,
                 width: 200
             },
-            {
-                level: this.levelsArray[3],
-                positionX: 450,
-                positionY: 150,
-                height: 50,
-                width: 100
-            },
         ];
     }
     setup() {
     }
     draw() {
-        for (const button of this.levelArrayButtons) {
-            fill(200);
+        for (const [index, button] of this.levelArrayButtons.entries()) {
+            const stringInLocalStorage = `${button.level.codename}-highscore`;
+            button.level.isCompleted = !!localStorage.getItem(stringInLocalStorage);
+            button.level.bestTime = parseFloat(localStorage.getItem(stringInLocalStorage) || '0');
+            if (button.level.isCompleted)
+                fill(COLOR_WHITE);
+            else
+                fill(COLOR_LIGHT_PINK);
             rect(button.positionX, button.positionY, button.width, button.height);
-            fill(random(0, 75), random(0, 75), random(0, 75));
+            fill(COLOR_DARK_PINK);
             textSize(20);
             textAlign(CENTER, CENTER);
-            text(`${button.level.codename}`, button.positionX + button.width / 2, button.positionY + button.height / 2);
+            text(`Level ${index + 1}`, button.positionX + button.width / 2, button.positionY + button.height / 2);
+            fill(COLOR_SATURATED_PINK);
+            textSize(14);
+            if (button.level.bestTime)
+                text(`Best time: ${nf(button.level.bestTime, 2)}`, button.positionX + button.width / 2, button.positionY + button.height / 2 + 40);
         }
     }
     mouseClicked() {
@@ -1014,4 +1141,30 @@ class LevelSelection {
     }
 }
 const levelSelection = new LevelSelection();
+class LoseScreen {
+    constructor() {
+        this.backButton = new TextButton({
+            positionX: 100,
+            positionY: 50,
+            text: 'Try again',
+            onClick: () => { stateManager.switchToLevelSelection(); }
+        });
+    }
+    draw() {
+        push();
+        image(this.bg, 0, 0);
+        strokeWeight(5);
+        stroke(COLOR_DARK);
+        fill(COLOR_YELLOW);
+        textSize(40);
+        textAlign(CENTER);
+        text(this.text, CANVAS_WIDTH / 4 * 3, CANVAS_HEIGHT / 4);
+        this.backButton.draw();
+        pop();
+    }
+    mouseClicked() {
+        this.backButton.mouseClicked();
+    }
+}
+const loseScreen = new LoseScreen();
 //# sourceMappingURL=build.js.map

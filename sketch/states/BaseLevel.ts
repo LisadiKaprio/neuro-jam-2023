@@ -15,6 +15,9 @@ class BaseLevel {
 
     private opponent: Opponent;
     private evil: Evil;
+    private robotIngameImage: p5.Image;
+    private robotLoseImage: p5.Image;
+    private robotWinImage: p5.Image;
 
     private currentFrame = 0;
 
@@ -29,6 +32,9 @@ class BaseLevel {
         this.frenzyProgressAddition = this.progressBar.progressStep;
         this.opponent = new Opponent();
         this.evil = new Evil();
+        this.robotIngameImage = robotIngameOne;
+        this.robotLoseImage = robotLoseOne;
+        this.robotWinImage = robotWinOne;
     }
 
     setup() {
@@ -39,13 +45,24 @@ class BaseLevel {
         this.timePlayingThisLevel++;
         // imageMode(CENTER);
 
+        push();
+        imageMode(CENTER);
+        image(this.robotIngameImage, CANVAS_WIDTH / 2, CANVAS_WIDTH / 2 + 45);
+        pop()
+
         this.drawFrenzyMeter();
         this.drawProgressBar();
         this.evil.draw();
         this.opponent.draw();
         this.countdown.draw();
+
+        if (this.currentProgress >= this.progressBar.maxStep) {
+            localStorage.setItem(`${this.level.codename}-highscore`, this.countdown.elapsedTime.toString());
+            stateManager.switchToLevelSelection();
+        }
+
         if (this.countdown.remainingTime <= 0) {
-            stateManager.switchToLoseScreen();
+            stateManager.switchToLoseScreen(lostTimeoutBG, 'You ran out of time!');
         }
 
         if (this.timePlayingThisLevel <= 5 || this.opponent.state === OpponentState.SHOCKED) { return }

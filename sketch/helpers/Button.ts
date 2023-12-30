@@ -86,7 +86,7 @@ class Button {
         }
     }
 
-    mousePressed(whatHappens: () => void) {
+    mouseClicked(whatHappens: () => void) {
         if (this.isMouseOver()) {
             image(this.spriteHover, this.positionX, this.positionY, this.width * this.size * this.sizeMultiplierOnPressed, this.height * this.size * this.sizeMultiplierOnPressed)
         }

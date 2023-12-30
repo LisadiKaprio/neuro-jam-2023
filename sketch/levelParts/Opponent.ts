@@ -14,6 +14,7 @@ class Opponent {
     public state: OpponentState = OpponentState.WORKING;
     public currentFrame: number = 0;
     private characterSize = 0.9;
+
     private timeBeforeGameEnd = FRAMERATE * 4;
     private currentTimeBeforeGameEnd = this.timeBeforeGameEnd;
 
@@ -25,13 +26,13 @@ class Opponent {
     private positionX = CANVAS_WIDTH - this.characterWidth + this.offsetX;
     private positionY = CANVAS_HEIGHT - this.characterHeight + this.offsetY;
 
-    public minWorkingTime = 1;
-    public maxWorkingTime = 1;
+    public minWorkingTime = 4;
+    public maxWorkingTime = 6;
 
-    public minDistractionTime = 40;
-    public maxDistractionTime = 60;
+    public minDistractionTime = 5;
+    public maxDistractionTime = 7;
 
-    public minFoundTime = 1.75;
+    public minFoundTime = 1.35;
     public maxFoundTime = 1.75;
 
     private timeUntilStateChange = random(FRAMERATE * this.minWorkingTime, FRAMERATE * this.maxWorkingTime);
@@ -126,7 +127,7 @@ class Opponent {
         this.currentTimeBeforeGameEnd -= 1;
         if (this.currentTimeBeforeGameEnd <= 0) {
             this.currentTimeBeforeGameEnd = this.timeBeforeGameEnd
-            stateManager.switchToLoseScreen();
+            stateManager.switchToLoseScreen(lostCaughtBG, 'You got caught!');
         }
         this.animate(shockedOpponentAnimation, this.positionX, this.positionY)
     }

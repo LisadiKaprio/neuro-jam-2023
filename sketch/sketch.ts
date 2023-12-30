@@ -1,7 +1,10 @@
 /// <reference path="./Types.ts" />
-const animFilePath = `../art/anim`
-const opponentFilePath = `../art/opponent`
-const evilFilePath = `../art/evil`
+const animFilePath = `../art/anim`;
+const opponentFilePath = `../art/opponent`;
+const evilFilePath = `../art/evil`;
+const robotsFilePath = `../art/robots`;
+
+let customFont: p5.Font;
 
 let musicMenu: p5.SoundFile;
 
@@ -20,6 +23,9 @@ let spriteProgressFull: p5.Image;
 let spriteProgressFrenzy: p5.Image;
 
 let defaultBackground: p5.Image;
+
+let lostCaughtBG: p5.Image;
+let lostTimeoutBG: p5.Image;
 
 let idleEvilImages: p5.Image[];
 let idleEvilAnimation: Frame[];
@@ -50,12 +56,23 @@ let foundArmImage: p5.Image;
 let shockedOpponentImages: p5.Image[];
 let shockedOpponentAnimation: Frame[];
 
+let robotIngameOne: p5.Image;
+let robotIngameTwo: p5.Image;
+let robotIngameThree: p5.Image;
+let robotLoseOne: p5.Image;
+let robotLoseTwo: p5.Image;
+let robotLoseThree: p5.Image;
+let robotWinOne: p5.Image;
+let robotWinTwo: p5.Image;
+let robotWinThree: p5.Image;
+
 
 function preload() {
 
   soundFormats('mp3');
   //@ts-ignore
   musicMenu = loadSound(`../audio/music-little-think.mp3`);
+  customFont = loadFont('../fonts/CherryBombOne-Regular.ttf');
   buttonMusicIdle = loadImage(`../art/interface/button-music-idle.png`);
   buttonMusicHover = loadImage(`../art/interface/button-music-hover.png`);
   buttonMusicDisabled = loadImage(`../art/interface/button-music-disabled.png`);
@@ -69,6 +86,18 @@ function preload() {
   spriteProgressFull = loadImage('../art/interface/progress-bar-full.png');
   spriteProgressFrenzy = loadImage('../art/interface/progress-bar-frenzy.png');
   defaultBackground = loadImage('../art/bg/default.jpg');
+  lostCaughtBG = loadImage('../art/bg/lost-caught-bg.png');
+  lostTimeoutBG = loadImage('../art/bg/lost-timeout-bg.png');
+  robotIngameOne = loadImage(`${robotsFilePath}/ingame-1.png`);
+  robotIngameTwo = loadImage(`${robotsFilePath}/ingame-2.png`);
+  robotIngameThree = loadImage(`${robotsFilePath}/ingame-3.png`);
+  robotLoseOne = loadImage(`${robotsFilePath}/lose-1.png`);
+  robotLoseTwo = loadImage(`${robotsFilePath}/lose-2.png`);
+  robotLoseThree = loadImage(`${robotsFilePath}/lose-3.png`);
+  robotWinOne = loadImage(`${robotsFilePath}/win-1.png`);
+  robotWinTwo = loadImage(`${robotsFilePath}/win-2.png`);
+  robotWinThree = loadImage(`${robotsFilePath}/win-3.png`);
+
 
   idleEvilImages = Array.from({ length: 5 }, (_, i) => loadImage(`${evilFilePath}/idle-${i}.png`));
   idleEvilAnimation = [
@@ -309,6 +338,7 @@ function preload() {
 }
 
 function setup() {
+  textFont(customFont);
   createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
   background(COLOR_LIGHTER_MAIN_PINK);
   volumeControl.setup();
