@@ -36,6 +36,7 @@ class BaseLevel {
         this.robotIngameImage = robotIngameOne;
         this.robotLoseImage = robotLoseOne;
         this.robotWinImage = robotWinOne;
+        this.maxFrenzyMeter = dist(0, 0, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
     }
 
     setup() {
@@ -44,7 +45,6 @@ class BaseLevel {
     draw() {
         image(defaultBackground, 0, 0)
         this.timePlayingThisLevel++;
-        // imageMode(CENTER);
 
         push();
         imageMode(CENTER);
@@ -77,14 +77,16 @@ class BaseLevel {
         }
 
         const forbiddenToProgress = this.opponent.state === OpponentState.WORKING || this.opponent.state === OpponentState.THINKING
-        if (mouseIsPressed && forbiddenToProgress) {
-            this.frenzyMeter = 0;
-            this.opponent.state = OpponentState.SHOCKED;
-            this.evil.state = EvilState.CAUGHT;
-            return
-        }
 
-        if (mouseIsPressed) {
+        // awkward touch screen compatibility attempt
+        if (mouseIsPressed && mouseButton === LEFT || touches.length > 0) {
+            if (volumeControl.musicVolumeControl.isMouseOver() || volumeControl.sfxVolumeControl.isMouseOver()) return;
+            if (forbiddenToProgress) {
+                this.frenzyMeter = 0;
+                this.opponent.state = OpponentState.SHOCKED;
+                this.evil.state = EvilState.CAUGHT;
+                return
+            }
             this.beInteracted();
         } else {
             this.beIdle();

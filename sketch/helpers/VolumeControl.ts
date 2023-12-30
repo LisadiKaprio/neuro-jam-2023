@@ -1,7 +1,7 @@
 /// <reference path="./Button.ts" />
 class VolumeControl {
-    private musicVolumeControl: VolumeControlElement;
-    private sfxVolumeControl: VolumeControlElement;
+    public musicVolumeControl: VolumeControlElement;
+    public sfxVolumeControl: VolumeControlElement;
 
     private currentMusic: p5.SoundFile;
 

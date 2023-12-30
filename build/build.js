@@ -637,6 +637,7 @@ class BaseLevel {
         this.robotIngameImage = robotIngameOne;
         this.robotLoseImage = robotLoseOne;
         this.robotWinImage = robotWinOne;
+        this.maxFrenzyMeter = dist(0, 0, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
     }
     setup() {
     }
@@ -670,13 +671,15 @@ class BaseLevel {
             this.currentProgress -= this.progressBar.progressReductionStep;
         }
         const forbiddenToProgress = this.opponent.state === OpponentState.WORKING || this.opponent.state === OpponentState.THINKING;
-        if (mouseIsPressed && forbiddenToProgress) {
-            this.frenzyMeter = 0;
-            this.opponent.state = OpponentState.SHOCKED;
-            this.evil.state = EvilState.CAUGHT;
-            return;
-        }
-        if (mouseIsPressed) {
+        if (mouseIsPressed && mouseButton === LEFT || touches.length > 0) {
+            if (volumeControl.musicVolumeControl.isMouseOver() || volumeControl.sfxVolumeControl.isMouseOver())
+                return;
+            if (forbiddenToProgress) {
+                this.frenzyMeter = 0;
+                this.opponent.state = OpponentState.SHOCKED;
+                this.evil.state = EvilState.CAUGHT;
+                return;
+            }
             this.beInteracted();
         }
         else {
@@ -984,6 +987,7 @@ var OpponentState;
 })(OpponentState || (OpponentState = {}));
 class Opponent {
     constructor() {
+        this.frameCountSinceAnimationStart = 0;
         this.state = OpponentState.WORKING;
         this.currentFrame = 0;
         this.characterSize = 0.9;
@@ -1004,6 +1008,7 @@ class Opponent {
         this.timeUntilStateChange = random(FRAMERATE * this.minWorkingTime, FRAMERATE * this.maxWorkingTime);
     }
     draw() {
+        this.frameCountSinceAnimationStart++;
         this.timeUntilStateChange--;
         if (this.timeUntilStateChange <= 0) {
             this.handleStateChange();
@@ -1055,15 +1060,18 @@ class Opponent {
         }
     }
     changeToState(state, minTimeUntilNextChange, maxTimeUntilNextChange) {
+        this.frameCountSinceAnimationStart = 0;
         this.state = state;
         this.timeUntilStateChange = random(minTimeUntilNextChange, maxTimeUntilNextChange);
         this.currentFrame = 0;
     }
     changeToStateAfterAnimationEnd(animation, state) {
+        this.frameCountSinceAnimationStart = 0;
         this.state = state;
         for (const frame of animation) {
             this.timeUntilStateChange += frame.duration;
         }
+        this.currentFrame = 0;
     }
     drawWorking() {
         push();
@@ -1116,8 +1124,13 @@ class Opponent {
             this.currentFrame = 0;
         }
         const currentFrameImage = animation[this.currentFrame].image;
+        console.log(`state  ` + this.state);
+        console.log(`currentFrame  ` + this.currentFrame);
+        console.log(`%  ` + this.frameCountSinceAnimationStart % animation[this.currentFrame].duration);
+        console.log(`frameCountSinceAnimationStart  ` + this.frameCountSinceAnimationStart);
+        console.log(`animation[this.currentFrame].duration  ` + animation[this.currentFrame].duration);
         image(currentFrameImage, x, y, this.characterWidth, this.characterHeight);
-        if (frameCount % animation[this.currentFrame].duration === 0) {
+        if (this.frameCountSinceAnimationStart % animation[this.currentFrame].duration === 0 && this.frameCountSinceAnimationStart !== 0) {
             this.currentFrame = (this.currentFrame + 1) % animation.length;
         }
     }
@@ -1139,7 +1152,10 @@ class ProgressBar {
         let fullPositionY = this.spriteBase.height / 2 - 8;
         let spriteToShow = this.inFrenzy ? this.spriteFrenzy : this.spriteFull;
         image(this.spriteBase, CANVAS_WIDTH / 2 - this.spriteBase.width / 2, 0);
-        const progressWidth = Math.floor(this.spriteEmpty.width * (this.currentProgress / this.maxStep));
+        let widthMultiplier = this.currentProgress / this.maxStep;
+        if (widthMultiplier > 1)
+            widthMultiplier = 1;
+        const progressWidth = Math.floor(this.spriteEmpty.width * widthMultiplier);
         if (progressWidth > 1) {
             image(spriteToShow, fullPositionX, fullPositionY, progressWidth, this.spriteFull.height, 0, 0, progressWidth, this.spriteFull.height);
         }

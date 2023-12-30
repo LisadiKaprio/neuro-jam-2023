@@ -13,6 +13,8 @@ enum OpponentState {
 }
 
 class Opponent {
+    private frameCountSinceAnimationStart = 0;
+
     public state: OpponentState = OpponentState.WORKING;
     public currentFrame: number = 0;
     private characterSize = 0.9;
@@ -43,6 +45,7 @@ class Opponent {
     }
 
     draw() {
+        this.frameCountSinceAnimationStart++;
         this.timeUntilStateChange--;
         if (this.timeUntilStateChange <= 0) {
             this.handleStateChange();
@@ -97,16 +100,19 @@ class Opponent {
     }
 
     changeToState(state: OpponentState, minTimeUntilNextChange: number, maxTimeUntilNextChange: number) {
+        this.frameCountSinceAnimationStart = 0;
         this.state = state;
         this.timeUntilStateChange = random(minTimeUntilNextChange, maxTimeUntilNextChange)
         this.currentFrame = 0;
     }
 
     changeToStateAfterAnimationEnd(animation: Frame[], state: OpponentState) {
+        this.frameCountSinceAnimationStart = 0;
         this.state = state;
         for (const frame of animation) {
             this.timeUntilStateChange += frame.duration;
         }
+        this.currentFrame = 0;
     }
 
     drawWorking() {
@@ -167,8 +173,13 @@ class Opponent {
             this.currentFrame = 0;
         }
         const currentFrameImage = animation[this.currentFrame].image;
+        console.log(`state  ` + this.state)
+        console.log(`currentFrame  ` + this.currentFrame)
+        console.log(`%  ` + this.frameCountSinceAnimationStart % animation[this.currentFrame].duration)
+        console.log(`frameCountSinceAnimationStart  ` + this.frameCountSinceAnimationStart)
+        console.log(`animation[this.currentFrame].duration  ` + animation[this.currentFrame].duration)
         image(currentFrameImage, x, y, this.characterWidth, this.characterHeight);
-        if (frameCount % animation[this.currentFrame].duration === 0) {
+        if (this.frameCountSinceAnimationStart % animation[this.currentFrame].duration === 0 && this.frameCountSinceAnimationStart !== 0) {
             this.currentFrame = (this.currentFrame + 1) % animation.length;
         }
     }

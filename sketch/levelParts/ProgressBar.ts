@@ -24,7 +24,10 @@ class ProgressBar {
         let spriteToShow = this.inFrenzy ? this.spriteFrenzy : this.spriteFull;
 
         image(this.spriteBase, CANVAS_WIDTH / 2 - this.spriteBase.width / 2, 0);
-        const progressWidth = Math.floor(this.spriteEmpty.width * (this.currentProgress / this.maxStep));
+
+        let widthMultiplier = this.currentProgress / this.maxStep;
+        if (widthMultiplier > 1) widthMultiplier = 1;
+        const progressWidth = Math.floor(this.spriteEmpty.width * widthMultiplier);
         if (progressWidth > 1) {
             image(spriteToShow, fullPositionX, fullPositionY, progressWidth, this.spriteFull.height, 0, 0, progressWidth, this.spriteFull.height);
         }
