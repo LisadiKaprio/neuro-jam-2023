@@ -1,8 +1,8 @@
 /// <reference path="./Types.ts" />
-const animFilePath = `../art/anim`;
-const opponentFilePath = `../art/opponent`;
-const evilFilePath = `../art/evil`;
-const robotsFilePath = `../art/robots`;
+const animFilePath = `./art/anim`;
+const opponentFilePath = `./art/opponent`;
+const evilFilePath = `./art/evil`;
+const robotsFilePath = `./art/robots`;
 
 let customFont: p5.Font;
 
@@ -83,23 +83,23 @@ function preload() {
 
   soundFormats('mp3');
   //@ts-ignore
-  musicMenu = loadSound(`../audio/music-little-think.mp3`);
-  customFont = loadFont('../fonts/CherryBombOne-Regular.ttf');
-  buttonMusicIdle = loadImage(`../art/interface/button-music-idle.png`);
-  buttonMusicHover = loadImage(`../art/interface/button-music-hover.png`);
-  buttonMusicDisabled = loadImage(`../art/interface/button-music-disabled.png`);
-  buttonMusicDisabledHover = loadImage(`../art/interface/button-music-disabled-hover.png`);
-  buttonSoundIdle = loadImage(`../art/interface/button-sound-idle.png`);
-  buttonSoundHover = loadImage(`../art/interface/button-sound-hover.png`);
-  buttonSoundDisabled = loadImage(`../art/interface/button-sound-disabled.png`);
-  buttonSoundDisabledHover = loadImage(`../art/interface/button-sound-disabled-hover.png`);
-  spriteProgressBase = loadImage('../art/interface/progress-bar-base.png');
-  spriteProgressEmpty = loadImage('../art/interface/progress-bar-empty.png');
-  spriteProgressFull = loadImage('../art/interface/progress-bar-full.png');
-  spriteProgressFrenzy = loadImage('../art/interface/progress-bar-frenzy.png');
-  defaultBackground = loadImage('../art/bg/default.jpg');
-  lostCaughtBG = loadImage('../art/bg/lost-caught-bg.png');
-  lostTimeoutBG = loadImage('../art/bg/lost-timeout-bg.png');
+  musicMenu = loadSound(`./audio/music-little-think.mp3`);
+  customFont = loadFont('./fonts/CherryBombOne-Regular.ttf');
+  buttonMusicIdle = loadImage(`./art/interface/button-music-idle.png`);
+  buttonMusicHover = loadImage(`./art/interface/button-music-hover.png`);
+  buttonMusicDisabled = loadImage(`./art/interface/button-music-disabled.png`);
+  buttonMusicDisabledHover = loadImage(`./art/interface/button-music-disabled-hover.png`);
+  buttonSoundIdle = loadImage(`./art/interface/button-sound-idle.png`);
+  buttonSoundHover = loadImage(`./art/interface/button-sound-hover.png`);
+  buttonSoundDisabled = loadImage(`./art/interface/button-sound-disabled.png`);
+  buttonSoundDisabledHover = loadImage(`./art/interface/button-sound-disabled-hover.png`);
+  spriteProgressBase = loadImage('./art/interface/progress-bar-base.png');
+  spriteProgressEmpty = loadImage('./art/interface/progress-bar-empty.png');
+  spriteProgressFull = loadImage('./art/interface/progress-bar-full.png');
+  spriteProgressFrenzy = loadImage('./art/interface/progress-bar-frenzy.png');
+  defaultBackground = loadImage('./art/bg/default.jpg');
+  lostCaughtBG = loadImage('./art/bg/lost-caught-bg.png');
+  lostTimeoutBG = loadImage('./art/bg/lost-timeout-bg.png');
   robotIngameOne = loadImage(`${robotsFilePath}/ingame-1.png`);
   robotIngameTwo = loadImage(`${robotsFilePath}/ingame-2.png`);
   robotIngameThree = loadImage(`${robotsFilePath}/ingame-3.png`);
