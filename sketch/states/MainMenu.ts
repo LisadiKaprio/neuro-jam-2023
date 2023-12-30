@@ -9,8 +9,8 @@ class MainMenu {
     private startGameButton: TextButton;
 
     constructor() {
-        this.buttonX = 100;
-        this.buttonY = 200;
+        this.buttonX = 200;
+        this.buttonY = 400;
         this.buttonWidth = 200;
         this.buttonHeight = 50;
         this.startGameButton = new TextButton({
@@ -19,7 +19,8 @@ class MainMenu {
             text: 'Start Game',
             onClick: () => {
                 stateManager.switchToLevelSelection();
-            }
+            },
+            size: 50
         });
     }
 
@@ -27,11 +28,24 @@ class MainMenu {
     }
 
     setup() {
-        console.log('setup main menu')
         volumeControl.playMusic(musicMenu);
     }
 
     draw() {
+
+        wobble(
+            true,
+            CENTER,
+            splashScreen,
+            CANVAS_WIDTH / 2,
+            CANVAS_HEIGHT / 2,
+            splashScreen.width * 1,
+            splashScreen.height * 1,
+            0.1,
+            0.03,
+            CANVAS_WIDTH - splashScreen.width * 0.9 / 2,
+            CANVAS_HEIGHT - splashScreen.height * 0.9 / 3
+        )
         this.startGameButton.draw();
     }
 

@@ -17,14 +17,16 @@ class Button {
     public positionY: number;
     public width: number;
     public height: number;
-    private spriteIdle: p5.Image;
-    private spriteHover: p5.Image;
+    public spriteIdle: p5.Image;
+    public spriteHover: p5.Image;
     private spriteDisabled: p5.Image;
     private spriteDisabledHover: p5.Image;
     private sizeMultiplierOnPressed: number;
     private size: number;
     public wobble: boolean;
     private wobbleRandomizer: number;
+
+    public mouseEntered = false;
 
     constructor(buttonConfig: ButtonConfig) {
         this.positionX = buttonConfig.positionX || 0;
@@ -62,6 +64,13 @@ class Button {
                 this.positionX + this.width / 2,
                 this.positionY + this.height / 2)
         }
+
+        if (!this.mouseEntered && this.isMouseOver()) {
+            this.mouseEntered = true;
+            volumeControl.playSound(soundBloop);
+        } else if (this.mouseEntered && !this.isMouseOver()) {
+            this.mouseEntered = false;
+        }
     }
 
     public isMouseOver() {
@@ -89,9 +98,8 @@ class Button {
     mouseClicked(whatHappens: () => void) {
         if (this.isMouseOver()) {
             image(this.spriteHover, this.positionX, this.positionY, this.width * this.size * this.sizeMultiplierOnPressed, this.height * this.size * this.sizeMultiplierOnPressed)
-        }
-        if (this.isMouseOver()) {
             whatHappens();
+            volumeControl.playSound(soundPow);
         }
     }
 }

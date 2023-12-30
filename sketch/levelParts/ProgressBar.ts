@@ -1,8 +1,11 @@
 class ProgressBar {
     public currentProgress: number = 0;
     public maxStep = 1000;
-    public progressStep: number = 1;
-    public progressReductionStep: number = 0.5;
+    public startProgressStep: number = 2;
+    public currentProgressStep: number = 2;
+    public progressReductionStep: number = 0.75;
+
+    public progressReductionStepMultiplier: number = 1;
 
     private spriteBase = spriteProgressBase;
     private spriteEmpty = spriteProgressEmpty;

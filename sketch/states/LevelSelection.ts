@@ -1,23 +1,30 @@
+/// <reference path="../sketch.ts" />
+
 type Level = {
     codename: string;
     isCompleted: boolean;
+    canBePlayed: boolean;
     robotIngameImage: p5.Image;
     robotLoseImage: p5.Image;
     robotWinImage: p5.Image;
-    progressStepMultiplier?: number;
-    progressReductionStepMultiplier?: number;
+    selectionButtonActive: p5.Image;
+    selectionButtonHover: p5.Image;
+    selectionButtonDisabled: p5.Image;
+    selectionButtonComplete: p5.Image;
+    selectionButtonCompleteHover: p5.Image;
+    progressStepMultiplier: number;
+    progressReductionStepMultiplier: number;
     minWorkingTimeMultiplier?: number;
     maxWorkingTimeMultiplier?: number;
     minFoundTimeMultiplier?: number;
+    chanceToTrickThink?: number;
+    chanceToTrickFound?: number;
     bestTime?: number;
 }
 
 type LevelButton = {
     level: Level;
-    positionX: number;
-    positionY: number;
-    height: number;
-    width: number;
+    button: Button;
 }
 
 class LevelSelection {
@@ -34,94 +41,125 @@ class LevelSelection {
         this.buttonY = 50;
         this.buttonWidth = 200;
         this.buttonHeight = 50;
+    }
+    setup() {
         this.levelsArray = [
             {
                 codename: 'level-one',
                 isCompleted: false,
+                canBePlayed: true,
                 robotIngameImage: robotIngameOne,
                 robotLoseImage: robotLoseOne,
                 robotWinImage: robotWinOne,
-                maxWorkingTimeMultiplier: 0.9,
+                selectionButtonActive: levelOneButtonActive,
+                selectionButtonHover: levelOneButtonHover,
+                selectionButtonDisabled: levelOneButtonDisabled,
+                selectionButtonComplete: levelOneButtonComplete,
+                selectionButtonCompleteHover: levelOneButtonCompleteHover,
+                progressStepMultiplier: 1,
+                progressReductionStepMultiplier: 1,
             } as Level,
             {
                 codename: 'level-two',
                 isCompleted: false,
+                canBePlayed: false,
                 robotIngameImage: robotIngameTwo,
                 robotLoseImage: robotLoseTwo,
                 robotWinImage: robotWinTwo,
-                progressStepMultiplier: .97,
-                progressReductionStepMultiplier: 1.05,
+                selectionButtonActive: levelTwoButtonActive,
+                selectionButtonHover: levelTwoButtonHover,
+                selectionButtonDisabled: levelTwoButtonDisabled,
+                selectionButtonComplete: levelTwoButtonComplete,
+                selectionButtonCompleteHover: levelTwoButtonCompleteHover,
+                progressStepMultiplier: 1,
+                progressReductionStepMultiplier: 1,
             } as Level,
             {
                 codename: 'level-three',
                 isCompleted: false,
+                canBePlayed: false,
                 robotIngameImage: robotIngameThree,
                 robotLoseImage: robotLoseThree,
                 robotWinImage: robotWinThree,
-                progressStepMultiplier: 2,
-                progressReductionStepMultiplier: 0.25,
-                minWorkingTimeMultiplier: 0.25,
-                maxWorkingTimeMultiplier: 1.1,
-                minFoundTimeMultiplier: 0.5,
+                selectionButtonActive: levelThreeButtonActive,
+                selectionButtonHover: levelThreeButtonHover,
+                selectionButtonDisabled: levelThreeButtonDisabled,
+                selectionButtonComplete: levelThreeButtonComplete,
+                selectionButtonCompleteHover: levelThreeButtonCompleteHover,
+                progressStepMultiplier: 1,
+                progressReductionStepMultiplier: 1,
             } as Level
         ]
         this.levelArrayButtons = [
             {
                 level: this.levelsArray[0],
-                positionX: 100,
-                positionY: 50,
-                height: 50,
-                width: 200
+                button: new Button({
+                    positionX: 150,
+                    positionY: 100,
+                    spriteIdle: levelOneButtonActive,
+                    spriteHover: levelOneButtonHover,
+                    spriteDisabled: levelOneButtonDisabled,
+                    spriteDisabledHover: levelOneButtonDisabled,
+                    wobble: true,
+                }),
             },
             {
                 level: this.levelsArray[1],
-                positionX: 375,
-                positionY: 50,
-                height: 50,
-                width: 100
+                button: new Button({
+                    positionX: 145,
+                    positionY: 375,
+                    spriteIdle: levelTwoButtonActive,
+                    spriteHover: levelTwoButtonHover,
+                    spriteDisabled: levelTwoButtonDisabled,
+                    spriteDisabledHover: levelTwoButtonDisabled,
+                    wobble: true,
+                }),
             },
             {
                 level: this.levelsArray[2],
-                positionX: 100,
-                positionY: 150,
-                height: 50,
-                width: 200
+                button: new Button({
+                    positionX: 450,
+                    positionY: 105,
+                    spriteIdle: levelThreeButtonActive,
+                    spriteHover: levelThreeButtonHover,
+                    spriteDisabled: levelThreeButtonDisabled,
+                    spriteDisabledHover: levelThreeButtonDisabled,
+                    wobble: true,
+                }),
             },
         ]
-    }
-    setup() {
     }
 
     draw() {
         for (const [index, button] of this.levelArrayButtons.entries()) {
+
             const stringInLocalStorage = `${button.level.codename}-highscore`;
+            if (index > 0) {
+                const stringPreviousLevelInLocalStorage = `${this.levelArrayButtons[index - 1].level.codename}-highscore`;
+                button.level.canBePlayed = !!localStorage.getItem(stringPreviousLevelInLocalStorage);
+            }
             button.level.isCompleted = !!localStorage.getItem(stringInLocalStorage);
             button.level.bestTime = parseFloat(localStorage.getItem(stringInLocalStorage) || '0');
+            if (button.level.isCompleted) {
+                button.button.spriteIdle = button.level.selectionButtonComplete;
+                button.button.spriteHover = button.level.selectionButtonCompleteHover;
+            }
+            if (!button.level.canBePlayed) {
+                button.button.spriteIdle = button.level.selectionButtonDisabled;
+                button.button.spriteHover = button.level.selectionButtonDisabled;
+                button.button.wobble = false;
+            }
 
-            if (button.level.isCompleted) fill(COLOR_WHITE);
-            else fill(COLOR_LIGHT_PINK);
+            button.button.draw();
 
-            rect(button.positionX, button.positionY, button.width, button.height);
-            fill(COLOR_DARK_PINK);
-            textSize(20);
-            textAlign(CENTER, CENTER);
-            text(`Level ${index + 1}`, button.positionX + button.width / 2, button.positionY + button.height / 2);
-            fill(COLOR_SATURATED_PINK);
-            textSize(14);
-            if (button.level.bestTime) text(`Best time: ${formatTime(button.level.bestTime)}`, button.positionX + button.width / 2, button.positionY + button.height / 2 + 40)
+            fill(COLOR_DARK);
+            if (button.level.bestTime) text(`Best time: ${formatTime(button.level.bestTime)}`, button.button.positionX + 10, button.button.positionY + button.button.height + 25)
         }
     }
 
     mouseClicked() {
         for (const button of this.levelArrayButtons) {
-            if (
-                mouseX > button.positionX &&
-                mouseX < button.positionX + button.width &&
-                mouseY > button.positionY &&
-                mouseY < button.positionY + button.height
-            ) {
-                stateManager.initiateLevel(button.level);
-            }
+            if (button.button.isMouseOver() && button.level.canBePlayed) stateManager.initiateLevel(button.level);
         }
     }
 }

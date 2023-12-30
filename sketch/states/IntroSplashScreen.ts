@@ -3,10 +3,15 @@ class IntroSplashScreen {
 
     }
     draw() {
-        fill(COLOR_WHITE);
-        textSize(20);
+        push();
+        image(splashScreen, -splashScreen.width / 2 - 150, -60, splashScreen.width * 1.5, splashScreen.height * 1.5)
+        fill(COLOR_YELLOW);
+        strokeWeight(5)
+        stroke(COLOR_SATURATED_PINK);
+        textSize(30);
         textAlign(CENTER, CENTER);
-        text("Press any button to continue", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+        text("Click anywhere to continue", CANVAS_WIDTH - 250, CANVAS_HEIGHT - textSize() - 25);
+        pop()
     }
 
     mouseClicked() {

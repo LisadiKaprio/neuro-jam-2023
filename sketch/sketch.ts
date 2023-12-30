@@ -7,6 +7,26 @@ const robotsFilePath = `./art/robots`;
 let customFont: p5.Font;
 
 let musicMenu: p5.SoundFile;
+let musicUrgency: p5.SoundFile;
+let musicAwkwardPiano: p5.SoundFile;
+
+let soundEvilHa: p5.SoundFile;
+let soundEvilHehe: p5.SoundFile;
+let soundEvilHehehe: p5.SoundFile;
+let soundEvilOhNyooo: p5.SoundFile;
+let soundEvilWhoops: p5.SoundFile;
+
+let soundNeuroErm: p5.SoundFile;
+let soundNeuroHeart: p5.SoundFile;
+let soundNeuroWuu: p5.SoundFile;
+let soundNeuroPog: p5.SoundFile;
+let soundNeuroOhDear: p5.SoundFile;
+
+let soundBloop: p5.SoundFile;
+let soundPow: p5.SoundFile;
+let soundClank: p5.SoundFile;
+let soundClankTap: p5.SoundFile;
+let soundToolbox: p5.SoundFile;
 
 let buttonMusicIdle: p5.Image;
 let buttonMusicHover: p5.Image;
@@ -23,6 +43,8 @@ let spriteProgressFull: p5.Image;
 let spriteProgressFrenzy: p5.Image;
 
 let defaultBackground: p5.Image;
+
+let splashScreen: p5.Image;
 
 let lostCaughtBG: p5.Image;
 let lostTimeoutBG: p5.Image;
@@ -68,6 +90,12 @@ let lostOpponentAnimation: Frame[];
 let wonOpponentImages: p5.Image[];
 let wonOpponentAnimation: Frame[];
 
+let cloudEvilImages: p5.Image[];
+let cloudEvilAnimation: Frame[];
+
+let cloudNeuroImages: p5.Image[];
+let cloudNeuroAnimation: Frame[];
+
 let robotIngameOne: p5.Image;
 let robotIngameTwo: p5.Image;
 let robotIngameThree: p5.Image;
@@ -78,12 +106,63 @@ let robotWinOne: p5.Image;
 let robotWinTwo: p5.Image;
 let robotWinThree: p5.Image;
 
+let levelOneButtonActive: p5.Image;
+let levelOneButtonHover: p5.Image;
+let levelOneButtonDisabled: p5.Image;
+let levelOneButtonComplete: p5.Image;
+let levelOneButtonCompleteHover: p5.Image;
+let levelTwoButtonActive: p5.Image;
+let levelTwoButtonHover: p5.Image;
+let levelTwoButtonDisabled: p5.Image;
+let levelTwoButtonComplete: p5.Image;
+let levelTwoButtonCompleteHover: p5.Image;
+let levelThreeButtonActive: p5.Image;
+let levelThreeButtonHover: p5.Image;
+let levelThreeButtonDisabled: p5.Image;
+let levelThreeButtonComplete: p5.Image;
+let levelThreeButtonCompleteHover: p5.Image;
+
 
 function preload() {
 
-  soundFormats('mp3');
+  //@ts-ignore
+  soundFormats('mp3', 'wav');
   //@ts-ignore
   musicMenu = loadSound(`./audio/music-little-think.mp3`);
+  //@ts-ignore
+  musicUrgency = loadSound(`./audio/music-urgency.mp3`);
+  //@ts-ignore
+  musicAwkwardPiano = loadSound(`./audio/awkwardPiano.mp3`);
+  //@ts-ignore
+  soundEvilHa = loadSound(`./audio/evil-ha.mp3`);
+  //@ts-ignore
+  soundEvilHehe = loadSound(`./audio/evil-hehe.mp3`);
+  //@ts-ignore
+  soundEvilHehehe = loadSound(`./audio/evil-hehehe.mp3`);
+  //@ts-ignore
+  soundEvilOhNyooo = loadSound(`./audio/evil-oh-nyooo.mp3`);
+  //@ts-ignore
+  soundEvilWhoops = loadSound(`./audio/evil-whoops.mp3`);
+  //@ts-ignore
+  soundNeuroErm = loadSound(`./audio/neuro-erm.mp3`);
+  //@ts-ignore
+  soundNeuroHeart = loadSound(`./audio/neuro-heart.mp3`);
+  //@ts-ignore
+  soundNeuroWuu = loadSound(`./audio/neuro-wuu.mp3`);
+  //@ts-ignore
+  soundNeuroPog = loadSound(`./audio/neuro-pog.mp3`);
+  //@ts-ignore
+  soundNeuroOhDear = loadSound(`./audio/neuro-oh-dear.mp3`);
+  //@ts-ignore
+  soundBloop = loadSound(`./audio/sound-bloop.wav`);
+  //@ts-ignore
+  soundPow = loadSound(`./audio/sound-pow.wav`);
+  //@ts-ignore
+  soundClank = loadSound(`./audio/sound-clank.wav`);
+  //@ts-ignore
+  soundClankTap = loadSound(`./audio/sound-clanktap.wav`);
+  //@ts-ignore
+  soundToolbox = loadSound(`./audio/sound-toolbox.wav`);
   customFont = loadFont('./fonts/CherryBombOne-Regular.ttf');
   buttonMusicIdle = loadImage(`./art/interface/button-music-idle.png`);
   buttonMusicHover = loadImage(`./art/interface/button-music-hover.png`);
@@ -98,6 +177,7 @@ function preload() {
   spriteProgressFull = loadImage('./art/interface/progress-bar-full.png');
   spriteProgressFrenzy = loadImage('./art/interface/progress-bar-frenzy.png');
   defaultBackground = loadImage('./art/bg/default.jpg');
+  splashScreen = loadImage('./art/bg/splashscreen.png');
   lostCaughtBG = loadImage('./art/bg/lost-caught-bg.png');
   lostTimeoutBG = loadImage('./art/bg/lost-timeout-bg.png');
   robotIngameOne = loadImage(`${robotsFilePath}/ingame-1.png`);
@@ -109,7 +189,53 @@ function preload() {
   robotWinOne = loadImage(`${robotsFilePath}/win-1.png`);
   robotWinTwo = loadImage(`${robotsFilePath}/win-2.png`);
   robotWinThree = loadImage(`${robotsFilePath}/win-3.png`);
+  levelOneButtonActive = loadImage(`${robotsFilePath}/level-1-active.png`);
+  levelOneButtonHover = loadImage(`${robotsFilePath}/level-1-hover.png`);
+  levelOneButtonDisabled = loadImage(`${robotsFilePath}/level-1-disabled.png`);
+  levelOneButtonComplete = loadImage(`${robotsFilePath}/level-1-complete.png`);
+  levelOneButtonCompleteHover = loadImage(`${robotsFilePath}/level-1-complete-hover.png`);
+  levelTwoButtonActive = loadImage(`${robotsFilePath}/level-2-active.png`);
+  levelTwoButtonHover = loadImage(`${robotsFilePath}/level-2-hover.png`);
+  levelTwoButtonDisabled = loadImage(`${robotsFilePath}/level-2-disabled.png`);
+  levelTwoButtonComplete = loadImage(`${robotsFilePath}/level-2-complete.png`);
+  levelTwoButtonCompleteHover = loadImage(`${robotsFilePath}/level-2-complete-hover.png`);
+  levelThreeButtonActive = loadImage(`${robotsFilePath}/level-3-active.png`);
+  levelThreeButtonHover = loadImage(`${robotsFilePath}/level-3-hover.png`);
+  levelThreeButtonDisabled = loadImage(`${robotsFilePath}/level-3-disabled.png`);
+  levelThreeButtonComplete = loadImage(`${robotsFilePath}/level-3-complete.png`);
+  levelThreeButtonCompleteHover = loadImage(`${robotsFilePath}/level-3-complete-hover.png`);
 
+  cloudEvilImages = Array.from({ length: 3 }, (_, i) => loadImage(`${robotsFilePath}/cloud-evil-${i}.png`));
+  cloudEvilAnimation = [
+    {
+      image: cloudEvilImages[0],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: cloudEvilImages[1],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: cloudEvilImages[2],
+      duration: SHORT_FRAME_DURATION
+    },
+  ] as Frame[];
+
+  cloudNeuroImages = Array.from({ length: 3 }, (_, i) => loadImage(`${robotsFilePath}/cloud-neuro-${i}.png`));
+  cloudNeuroAnimation = [
+    {
+      image: cloudNeuroImages[0],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: cloudNeuroImages[1],
+      duration: SHORT_FRAME_DURATION
+    },
+    {
+      image: cloudNeuroImages[2],
+      duration: SHORT_FRAME_DURATION
+    },
+  ] as Frame[];
 
   idleEvilImages = Array.from({ length: 5 }, (_, i) => loadImage(`${evilFilePath}/idle-${i}.png`));
   idleEvilAnimation = [
@@ -401,6 +527,7 @@ function setup() {
   textFont(customFont);
   createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
   background(COLOR_LIGHTER_MAIN_PINK);
+  levelSelection.setup();
   volumeControl.setup();
   stateManager.setup();
 }

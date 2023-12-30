@@ -1,7 +1,7 @@
 /// <reference path="./Button.ts" />
 class VolumeControlElement {
     private sliderLength: number;
-    private slider: p5.Element;
+    public slider: p5.Element;
     private button: Button;
     private triggerRect: { x: number, y: number, width: number, height: number };
     private maxValue: number;
@@ -25,8 +25,7 @@ class VolumeControlElement {
             height: this.button.height
         };
 
-        this.slider = createSlider(0, this.maxValue, this.defaultValue);
-        this.slider.size(this.sliderLength, 20);
+        this.slider = createSlider(0, this.maxValue, this.defaultValue, 0);
         this.slider.position(this.button.positionX - this.sliderLength / 2 + this.button.width / 2, this.button.positionY + this.button.height + this.sliderLength / 2);
         // make slider appear underneath the button 
         this.slider.style('width', `${this.sliderLength}px`);

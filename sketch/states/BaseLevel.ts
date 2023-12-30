@@ -1,7 +1,12 @@
 /// <reference path="../helpers/HelperStateManager.ts" />
+/// <reference path="../Types.ts" />
 class BaseLevel {
+    private robotPositionY = CANVAS_WIDTH / 2 + 45;
+    private cloud: Cloud;
+
     private timePlayingThisLevel = 0;
     private enteredWinning = false;
+    private enteredLosing = false;
     private progressBar: ProgressBar;
     private countdown: Countdown;
     private progressBarPositionX = CANVAS_WIDTH / 2 - spriteProgressEmpty.width / 2;
@@ -10,9 +15,10 @@ class BaseLevel {
 
     private frenzyProgressAddition = 0.1;
     private frenzyMeter = 0;
-    private frenzyMeterStep = 30;
+    private frenzyMeterStep = 37
     private maxFrenzyMeter = CANVAS_WIDTH + 100;
     private enteredFrenzyMode = false;
+    private frenzyProgressStepMultiplier = 2.25;
 
     private opponent: Opponent;
     private evil: Evil;
@@ -28,69 +34,106 @@ class BaseLevel {
         this.level = level;
         this.progressBar = new ProgressBar();
         this.countdown = new Countdown();
-        this.progressBar.progressStep = 1;
-        this.progressBar.progressReductionStep = 0.33;
-        this.frenzyProgressAddition = this.progressBar.progressStep;
+        this.progressBar.startProgressStep = this.progressBar.currentProgressStep * this.level.progressStepMultiplier;
+        this.progressBar.currentProgress = this.progressBar.startProgressStep
+        this.progressBar.progressReductionStepMultiplier = this.level.progressReductionStepMultiplier;
         this.opponent = new Opponent();
         this.evil = new Evil();
-        this.robotIngameImage = robotIngameOne;
-        this.robotLoseImage = robotLoseOne;
-        this.robotWinImage = robotWinOne;
-        this.maxFrenzyMeter = dist(0, 0, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+        this.cloud = new Cloud();
+        this.robotIngameImage = this.level.robotIngameImage;
+        this.robotLoseImage = this.level.robotLoseImage;
+        this.robotWinImage = this.level.robotWinImage;
     }
 
     setup() {
     }
 
     draw() {
+        this.maxFrenzyMeter = dist(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
         image(defaultBackground, 0, 0)
         this.timePlayingThisLevel++;
 
-        push();
-        imageMode(CENTER);
-        image(this.robotIngameImage, CANVAS_WIDTH / 2, CANVAS_WIDTH / 2 + 45);
-        pop()
-
-        this.drawFrenzyMeter();
-        this.drawProgressBar();
-        this.evil.draw();
-        this.opponent.draw();
-        this.countdown.draw();
-
-        if (this.currentProgress >= this.progressBar.maxStep && !this.enteredWinning) {
-            this.enteredWinning = true;
-            localStorage.setItem(`${this.level.codename}-highscore`, this.countdown.elapsedTime.toString());
-            this.evil.state = EvilState.WON;
-            this.opponent.state = OpponentState.LOST;
-        }
-
-        if (this.countdown.remainingTime <= 0) {
-            this.resetFrenzyMode();
-            this.evil.state = EvilState.IDLE;
-            this.opponent.state = OpponentState.WON;
-        }
-
-        if (this.timePlayingThisLevel <= 5 || this.opponent.state === OpponentState.SHOCKED) { return }
-
-        if (this.opponent.state === OpponentState.WORKING && this.currentProgress >= this.progressBar.progressReductionStep) {
-            this.currentProgress -= this.progressBar.progressReductionStep;
-        }
+        this.drawRobot();
 
         const forbiddenToProgress = this.opponent.state === OpponentState.WORKING || this.opponent.state === OpponentState.THINKING
 
         // awkward touch screen compatibility attempt
-        if (mouseIsPressed && mouseButton === LEFT || touches.length > 0) {
-            if (volumeControl.musicVolumeControl.isMouseOver() || volumeControl.sfxVolumeControl.isMouseOver()) return;
-            if (forbiddenToProgress) {
-                this.frenzyMeter = 0;
-                this.opponent.state = OpponentState.SHOCKED;
-                this.evil.state = EvilState.CAUGHT;
-                return
+        const playerInteractionConfirmed = (mouseIsPressed && mouseButton === LEFT || touches.length > 0)
+            && !(volumeControl.musicVolumeControl.isMouseOver() || volumeControl.sfxVolumeControl.isMouseOver())
+
+        const validPlayerInteractionConfirmed = !forbiddenToProgress
+            && this.opponent.state !== OpponentState.LOST
+            && this.opponent.state !== OpponentState.WON
+            && playerInteractionConfirmed
+        const losingPlayerInteractionConfirmed = forbiddenToProgress
+            && playerInteractionConfirmed
+
+        this.drawFrenzyMeter();
+        this.drawProgressBar();
+        this.evil.draw();
+
+        if (validPlayerInteractionConfirmed) this.cloud.draw(cloudEvilAnimation, CANVAS_WIDTH / 2, this.robotPositionY);
+        this.opponent.draw();
+        this.countdown.draw();
+
+        if (this.timePlayingThisLevel <= 5
+            || this.opponent.state === OpponentState.SHOCKED
+            || this.opponent.state === OpponentState.LOST
+            || this.opponent.state === OpponentState.WON
+        ) { return }
+
+        if (this.currentProgress >= this.progressBar.maxStep && !this.enteredWinning) {
+            this.enteredWinning = true;
+            this.opponent.currentTimeBeforeGameEnd = this.opponent.timeBeforeGameEnd
+            volumeControl.stopMusic();
+            this.resetFrenzyMode();
+
+            const stringInLocalStorage = `${this.level.codename}-highscore`;
+            this.level.bestTime = parseFloat(localStorage.getItem(stringInLocalStorage) || '0');
+            if (this.level.bestTime >= this.countdown.elapsedTime) {
+                localStorage.setItem(`${this.level.codename}-highscore`, this.countdown.elapsedTime.toString());
             }
+            volumeControl.playSound(soundNeuroOhDear);
+            this.evil.state = EvilState.WON;
+            this.opponent.state = OpponentState.LOST;
+            return
+        }
+
+        if (this.countdown.remainingTime <= 0 && !this.enteredLosing) {
+            this.enteredLosing = true;
+            volumeControl.stopMusic();
+            this.opponent.currentTimeBeforeGameEnd = this.opponent.timeBeforeGameEnd
+            this.resetFrenzyMode();
+            volumeControl.playSound(soundNeuroPog);
+            this.evil.state = EvilState.IDLE;
+            this.opponent.state = OpponentState.WON;
+            return
+        }
+
+        if (this.opponent.state === OpponentState.WORKING) {
+            this.cloud.draw(cloudNeuroAnimation, CANVAS_WIDTH / 2, this.robotPositionY);
+            if (this.currentProgress >= this.progressBar.progressReductionStep * this.progressBar.progressReductionStepMultiplier) this.currentProgress -= this.progressBar.progressReductionStep * this.progressBar.progressReductionStepMultiplier;
+        }
+
+
+
+        if (validPlayerInteractionConfirmed) {
             this.beInteracted();
+        } else if (losingPlayerInteractionConfirmed) {
+            if (!this.enteredLosing) {
+                this.enteredLosing = true;
+                volumeControl.playSound(random([soundEvilOhNyooo, soundEvilWhoops]))
+            }
+            this.frenzyMeter = 0;
+            volumeControl.stopMusic();
+            this.opponent.state = OpponentState.SHOCKED;
+            this.evil.state = EvilState.CAUGHT;
         } else {
             this.beIdle();
         }
+
+        console.log('progressStep ', this.progressBar.currentProgressStep)
+        console.log('progressReductionStep ', this.progressBar.progressReductionStep)
 
     }
 
@@ -107,8 +150,27 @@ class BaseLevel {
         pop();
     }
 
+    drawRobot() {
+        push();
+        imageMode(CENTER);
+        let imageToDraw = this.robotIngameImage;
+        if (!imageToDraw) {
+            console.log('no image to draw');
+            pop();
+            return;
+        }
+        if (this.opponent.state === OpponentState.LOST) {
+            imageToDraw = this.robotWinImage;
+        } else if (this.opponent.state === OpponentState.WON) {
+            imageToDraw = this.robotLoseImage;
+        }
+        image(imageToDraw, CANVAS_WIDTH / 2, this.robotPositionY);
+        pop();
+    }
+
     beIdle() {
-        this.evil.state = EvilState.IDLE;
+        volumeControl.playMusic(musicAwkwardPiano);
+        if (this.evil.state !== EvilState.WON) this.evil.state = EvilState.IDLE;
         if (this.frenzyMeter > 0) {
             this.resetFrenzyMode();
         }
@@ -116,7 +178,8 @@ class BaseLevel {
 
     beInteracted() {
         this.evil.state = EvilState.DESTROYING;
-        this.currentProgress += this.progressBar.progressStep;
+        volumeControl.playMusic(musicUrgency);
+        this.currentProgress += this.progressBar.currentProgressStep;
         if (this.frenzyMeter <= this.maxFrenzyMeter) {
             this.frenzyMeter += this.frenzyMeterStep;
         }
@@ -127,19 +190,28 @@ class BaseLevel {
 
     initiateFrenzyMode() {
         this.enteredFrenzyMode = true
-        this.progressBar.progressStep += this.frenzyProgressAddition;
+        this.progressBar.currentProgressStep = this.progressBar.startProgressStep * this.frenzyProgressStepMultiplier;
         this.evil.inFrenzy = true;
         this.progressBar.inFrenzy = true;
     }
 
     resetFrenzyMode() {
         this.enteredFrenzyMode = false;
+        this.progressBar.currentProgressStep = this.progressBar.startProgressStep;
         this.frenzyMeter = 0;
         this.evil.inFrenzy = false;
         this.progressBar.inFrenzy = false;
     }
 
     mouseClicked() {
-
+        if (
+            this.evil.state === EvilState.IDLE
+            && this.opponent.state !== OpponentState.WORKING
+            && this.opponent.state !== OpponentState.THINKING
+            && this.opponent.state !== OpponentState.LOST
+            && this.opponent.state !== OpponentState.WON
+            && !(volumeControl.musicVolumeControl.isMouseOver() || volumeControl.sfxVolumeControl.isMouseOver())) {
+            volumeControl.playSound(random([soundEvilHa, soundEvilHehe, soundEvilHehehe]))
+        }
     }
 }

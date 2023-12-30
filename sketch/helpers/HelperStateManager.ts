@@ -32,6 +32,8 @@ class HelperStateManager {
     }
 
     switchToLoseScreen(image: p5.Image, text: string) {
+        volumeControl.playMusic(musicMenu)
+
         loseScreen.bg = image;
         loseScreen.text = text;
         this.currentScene = loseScreen;
@@ -40,6 +42,7 @@ class HelperStateManager {
     }
 
     initiateLevel(level: Level) {
+        volumeControl.playMusic(musicAwkwardPiano)
         this.currentScene = new BaseLevel(level);
     }
 }

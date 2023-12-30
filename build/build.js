@@ -41,6 +41,23 @@ const evilFilePath = `./art/evil`;
 const robotsFilePath = `./art/robots`;
 let customFont;
 let musicMenu;
+let musicUrgency;
+let musicAwkwardPiano;
+let soundEvilHa;
+let soundEvilHehe;
+let soundEvilHehehe;
+let soundEvilOhNyooo;
+let soundEvilWhoops;
+let soundNeuroErm;
+let soundNeuroHeart;
+let soundNeuroWuu;
+let soundNeuroPog;
+let soundNeuroOhDear;
+let soundBloop;
+let soundPow;
+let soundClank;
+let soundClankTap;
+let soundToolbox;
 let buttonMusicIdle;
 let buttonMusicHover;
 let buttonMusicDisabled;
@@ -54,6 +71,7 @@ let spriteProgressEmpty;
 let spriteProgressFull;
 let spriteProgressFrenzy;
 let defaultBackground;
+let splashScreen;
 let lostCaughtBG;
 let lostTimeoutBG;
 let idleEvilImages;
@@ -83,6 +101,10 @@ let lostOpponentImages;
 let lostOpponentAnimation;
 let wonOpponentImages;
 let wonOpponentAnimation;
+let cloudEvilImages;
+let cloudEvilAnimation;
+let cloudNeuroImages;
+let cloudNeuroAnimation;
 let robotIngameOne;
 let robotIngameTwo;
 let robotIngameThree;
@@ -92,9 +114,41 @@ let robotLoseThree;
 let robotWinOne;
 let robotWinTwo;
 let robotWinThree;
+let levelOneButtonActive;
+let levelOneButtonHover;
+let levelOneButtonDisabled;
+let levelOneButtonComplete;
+let levelOneButtonCompleteHover;
+let levelTwoButtonActive;
+let levelTwoButtonHover;
+let levelTwoButtonDisabled;
+let levelTwoButtonComplete;
+let levelTwoButtonCompleteHover;
+let levelThreeButtonActive;
+let levelThreeButtonHover;
+let levelThreeButtonDisabled;
+let levelThreeButtonComplete;
+let levelThreeButtonCompleteHover;
 function preload() {
-    soundFormats('mp3');
+    soundFormats('mp3', 'wav');
     musicMenu = loadSound(`./audio/music-little-think.mp3`);
+    musicUrgency = loadSound(`./audio/music-urgency.mp3`);
+    musicAwkwardPiano = loadSound(`./audio/awkwardPiano.mp3`);
+    soundEvilHa = loadSound(`./audio/evil-ha.mp3`);
+    soundEvilHehe = loadSound(`./audio/evil-hehe.mp3`);
+    soundEvilHehehe = loadSound(`./audio/evil-hehehe.mp3`);
+    soundEvilOhNyooo = loadSound(`./audio/evil-oh-nyooo.mp3`);
+    soundEvilWhoops = loadSound(`./audio/evil-whoops.mp3`);
+    soundNeuroErm = loadSound(`./audio/neuro-erm.mp3`);
+    soundNeuroHeart = loadSound(`./audio/neuro-heart.mp3`);
+    soundNeuroWuu = loadSound(`./audio/neuro-wuu.mp3`);
+    soundNeuroPog = loadSound(`./audio/neuro-pog.mp3`);
+    soundNeuroOhDear = loadSound(`./audio/neuro-oh-dear.mp3`);
+    soundBloop = loadSound(`./audio/sound-bloop.wav`);
+    soundPow = loadSound(`./audio/sound-pow.wav`);
+    soundClank = loadSound(`./audio/sound-clank.wav`);
+    soundClankTap = loadSound(`./audio/sound-clanktap.wav`);
+    soundToolbox = loadSound(`./audio/sound-toolbox.wav`);
     customFont = loadFont('./fonts/CherryBombOne-Regular.ttf');
     buttonMusicIdle = loadImage(`./art/interface/button-music-idle.png`);
     buttonMusicHover = loadImage(`./art/interface/button-music-hover.png`);
@@ -109,6 +163,7 @@ function preload() {
     spriteProgressFull = loadImage('./art/interface/progress-bar-full.png');
     spriteProgressFrenzy = loadImage('./art/interface/progress-bar-frenzy.png');
     defaultBackground = loadImage('./art/bg/default.jpg');
+    splashScreen = loadImage('./art/bg/splashscreen.png');
     lostCaughtBG = loadImage('./art/bg/lost-caught-bg.png');
     lostTimeoutBG = loadImage('./art/bg/lost-timeout-bg.png');
     robotIngameOne = loadImage(`${robotsFilePath}/ingame-1.png`);
@@ -120,6 +175,51 @@ function preload() {
     robotWinOne = loadImage(`${robotsFilePath}/win-1.png`);
     robotWinTwo = loadImage(`${robotsFilePath}/win-2.png`);
     robotWinThree = loadImage(`${robotsFilePath}/win-3.png`);
+    levelOneButtonActive = loadImage(`${robotsFilePath}/level-1-active.png`);
+    levelOneButtonHover = loadImage(`${robotsFilePath}/level-1-hover.png`);
+    levelOneButtonDisabled = loadImage(`${robotsFilePath}/level-1-disabled.png`);
+    levelOneButtonComplete = loadImage(`${robotsFilePath}/level-1-complete.png`);
+    levelOneButtonCompleteHover = loadImage(`${robotsFilePath}/level-1-complete-hover.png`);
+    levelTwoButtonActive = loadImage(`${robotsFilePath}/level-2-active.png`);
+    levelTwoButtonHover = loadImage(`${robotsFilePath}/level-2-hover.png`);
+    levelTwoButtonDisabled = loadImage(`${robotsFilePath}/level-2-disabled.png`);
+    levelTwoButtonComplete = loadImage(`${robotsFilePath}/level-2-complete.png`);
+    levelTwoButtonCompleteHover = loadImage(`${robotsFilePath}/level-2-complete-hover.png`);
+    levelThreeButtonActive = loadImage(`${robotsFilePath}/level-3-active.png`);
+    levelThreeButtonHover = loadImage(`${robotsFilePath}/level-3-hover.png`);
+    levelThreeButtonDisabled = loadImage(`${robotsFilePath}/level-3-disabled.png`);
+    levelThreeButtonComplete = loadImage(`${robotsFilePath}/level-3-complete.png`);
+    levelThreeButtonCompleteHover = loadImage(`${robotsFilePath}/level-3-complete-hover.png`);
+    cloudEvilImages = Array.from({ length: 3 }, (_, i) => loadImage(`${robotsFilePath}/cloud-evil-${i}.png`));
+    cloudEvilAnimation = [
+        {
+            image: cloudEvilImages[0],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: cloudEvilImages[1],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: cloudEvilImages[2],
+            duration: SHORT_FRAME_DURATION
+        },
+    ];
+    cloudNeuroImages = Array.from({ length: 3 }, (_, i) => loadImage(`${robotsFilePath}/cloud-neuro-${i}.png`));
+    cloudNeuroAnimation = [
+        {
+            image: cloudNeuroImages[0],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: cloudNeuroImages[1],
+            duration: SHORT_FRAME_DURATION
+        },
+        {
+            image: cloudNeuroImages[2],
+            duration: SHORT_FRAME_DURATION
+        },
+    ];
     idleEvilImages = Array.from({ length: 5 }, (_, i) => loadImage(`${evilFilePath}/idle-${i}.png`));
     idleEvilAnimation = [
         {
@@ -396,6 +496,7 @@ function setup() {
     textFont(customFont);
     createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
     background(COLOR_LIGHTER_MAIN_PINK);
+    levelSelection.setup();
     volumeControl.setup();
     stateManager.setup();
 }
@@ -410,6 +511,7 @@ function mousePressed() {
 }
 class Button {
     constructor(buttonConfig) {
+        this.mouseEntered = false;
         this.positionX = buttonConfig.positionX || 0;
         this.positionY = buttonConfig.positionY || 0;
         this.size = buttonConfig.size || 1;
@@ -431,6 +533,13 @@ class Button {
         else {
             wobble(this.wobble, CENTER, this.spriteIdle, this.positionX, this.positionY, this.width, this.height, 0.1, 0.1, this.positionX + this.width / 2, this.positionY + this.height / 2);
         }
+        if (!this.mouseEntered && this.isMouseOver()) {
+            this.mouseEntered = true;
+            volumeControl.playSound(soundBloop);
+        }
+        else if (this.mouseEntered && !this.isMouseOver()) {
+            this.mouseEntered = false;
+        }
     }
     isMouseOver() {
         if (mouseX > this.positionX &&
@@ -451,9 +560,8 @@ class Button {
     mouseClicked(whatHappens) {
         if (this.isMouseOver()) {
             image(this.spriteHover, this.positionX, this.positionY, this.width * this.size * this.sizeMultiplierOnPressed, this.height * this.size * this.sizeMultiplierOnPressed);
-        }
-        if (this.isMouseOver()) {
             whatHappens();
+            volumeControl.playSound(soundPow);
         }
     }
 }
@@ -461,10 +569,15 @@ class IntroSplashScreen {
     setup() {
     }
     draw() {
-        fill(COLOR_WHITE);
-        textSize(20);
+        push();
+        image(splashScreen, -splashScreen.width / 2 - 150, -60, splashScreen.width * 1.5, splashScreen.height * 1.5);
+        fill(COLOR_YELLOW);
+        strokeWeight(5);
+        stroke(COLOR_SATURATED_PINK);
+        textSize(30);
         textAlign(CENTER, CENTER);
-        text("Press any button to continue", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+        text("Click anywhere to continue", CANVAS_WIDTH - 250, CANVAS_HEIGHT - textSize() - 25);
+        pop();
     }
     mouseClicked() {
         stateManager.switchToMainMenu();
@@ -473,7 +586,8 @@ class IntroSplashScreen {
 const introSplashScreen = new IntroSplashScreen();
 class VolumeControl {
     constructor() {
-        this.musicVolume = 0.1;
+        this.musicVolume = 1;
+        this.sfxVolume = 2;
         this.buttonSize = 0.75;
     }
     setup() {
@@ -489,7 +603,7 @@ class VolumeControl {
             sizeMultiplierOnPressed: 0.75,
             size: this.buttonSize,
             wobble: true
-        }, 100, 10, this.musicVolume);
+        }, 100, 5, this.musicVolume);
         this.musicVolumeControl.setup();
         const sfxButtonX = CANVAS_WIDTH - buttonMusicIdle.width * this.buttonSize * 2 - 10 * 2;
         const sfxButtonY = 10;
@@ -503,8 +617,21 @@ class VolumeControl {
             sizeMultiplierOnPressed: 0.75,
             size: 0.75,
             wobble: true
-        }, 100, 10, 5);
+        }, 100, 5, this.sfxVolume);
         this.sfxVolumeControl.setup();
+        const savedMusicVolume = localStorage.getItem('musicVolume');
+        console.log('savedMusicVolume ', savedMusicVolume);
+        console.log('savedMusicVolume ', parseFloat(savedMusicVolume));
+        const savedSfxVolume = localStorage.getItem('sfxVolume');
+        if (savedMusicVolume) {
+            this.musicVolumeControl.slider.value(parseFloat(savedMusicVolume));
+            this.musicVolume = parseFloat(savedMusicVolume);
+        }
+        if (savedSfxVolume) {
+            this.sfxVolumeControl.slider.value(parseFloat(savedSfxVolume));
+            this.sfxVolume = parseFloat(savedSfxVolume);
+        }
+        console.log('this.sfxVolume ', this.sfxVolume);
     }
     draw() {
         this.musicVolumeControl.draw();
@@ -512,31 +639,54 @@ class VolumeControl {
         if (this.musicVolume !== this.musicVolumeControl.currentValue) {
             this.musicVolume = this.musicVolumeControl.currentValue;
             console.log('changed music volume to ' + this.musicVolume);
-            this.changeMusicVolume();
+            this.changeMusicVolume(this.musicVolumeControl.currentValue);
         }
         if (this.sfxVolume !== this.sfxVolumeControl.currentValue) {
-            this.sfxVolume = this.sfxVolumeControl.currentValue;
+            this.changeSfxVolume(this.sfxVolumeControl.currentValue);
         }
     }
-    changeMusicVolume() {
+    changeSfxVolume(volume) {
+        localStorage.setItem('sfxVolume', volume.toString());
+        this.sfxVolume = volume;
+    }
+    changeMusicVolume(volume) {
+        localStorage.setItem('musicVolume', volume.toString());
+        this.musicVolume = volume;
         if (this.currentMusic) {
             this.currentMusic.setVolume(this.musicVolume);
         }
     }
     playMusic(music) {
+        var _a;
+        if (music === this.currentMusic)
+            return;
+        (_a = this.currentMusic) === null || _a === void 0 ? void 0 : _a.stop();
         this.currentMusic = music;
         this.currentMusic.setVolume(this.musicVolume);
-        this.currentMusic.play();
+        this.currentMusic.loop();
+    }
+    stopMusic() {
+        if (this.currentMusic.isLooping()) {
+            this.currentMusic.stop();
+        }
+    }
+    playSound(sfx) {
+        sfx.setVolume(this.sfxVolume);
+        const shift = random(0.7, 1.3);
+        sfx.rate(shift);
+        sfx.play();
+        sfx.rate(1);
     }
 }
 const volumeControl = new VolumeControl();
 class TextButton {
     constructor(buttonConfig) {
-        this.currentTextSize = 20;
+        this.size = 20;
         this.positionX = buttonConfig.positionX || 0;
         this.positionY = buttonConfig.positionY || 0;
         this.text = buttonConfig.text;
         this.onClick = buttonConfig.onClick;
+        this.size = buttonConfig.size || 20;
     }
     draw() {
         push();
@@ -544,15 +694,15 @@ class TextButton {
             strokeWeight(3);
             stroke(COLOR_WHITE);
             if (mousePressed)
-                textSize(20 * 1.1);
+                textSize(this.size * 1.1);
             else
-                textSize(20);
+                textSize(this.size);
             fill(COLOR_SATURATED_PINK);
         }
         else {
             strokeWeight(2);
             stroke(COLOR_MAIN_PINK);
-            textSize(20);
+            textSize(this.size);
             fill(COLOR_WHITE);
         }
         text(this.text, this.positionX, this.positionY);
@@ -560,21 +710,21 @@ class TextButton {
     }
     isMouseOver() {
         const x = this.positionX - textWidth(this.text) / 2;
-        const y = this.positionY - this.currentTextSize / 2;
+        const y = this.positionY - this.size / 2;
         if (mouseX > x &&
             mouseX < x + textWidth(this.text) * 1.1 &&
             mouseY > y &&
-            mouseY < y + this.currentTextSize * 1.25) {
+            mouseY < y + this.size * 1.25) {
             return true;
         }
     }
     isMouseOut() {
         const x = this.positionX - textWidth(this.text) / 2;
-        const y = this.positionY - this.currentTextSize / 2;
+        const y = this.positionY - this.size / 2;
         if (mouseX < x ||
             mouseX > x + textWidth(this.text) * 1.1 ||
             mouseY < y ||
-            mouseY > y + this.currentTextSize * 1.25) {
+            mouseY > y + this.size * 1.25) {
             return true;
         }
     }
@@ -586,8 +736,8 @@ class TextButton {
 }
 class MainMenu {
     constructor() {
-        this.buttonX = 100;
-        this.buttonY = 200;
+        this.buttonX = 200;
+        this.buttonY = 400;
         this.buttonWidth = 200;
         this.buttonHeight = 50;
         this.startGameButton = new TextButton({
@@ -596,16 +746,17 @@ class MainMenu {
             text: 'Start Game',
             onClick: () => {
                 stateManager.switchToLevelSelection();
-            }
+            },
+            size: 50
         });
     }
     preload() {
     }
     setup() {
-        console.log('setup main menu');
         volumeControl.playMusic(musicMenu);
     }
     draw() {
+        wobble(true, CENTER, splashScreen, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, splashScreen.width * 1, splashScreen.height * 1, 0.1, 0.03, CANVAS_WIDTH - splashScreen.width * 0.9 / 2, CANVAS_HEIGHT - splashScreen.height * 0.9 / 3);
         this.startGameButton.draw();
     }
     mouseClicked() {
@@ -615,76 +766,110 @@ class MainMenu {
 const mainMenu = new MainMenu();
 class BaseLevel {
     constructor(level) {
+        this.robotPositionY = CANVAS_WIDTH / 2 + 45;
         this.timePlayingThisLevel = 0;
         this.enteredWinning = false;
+        this.enteredLosing = false;
         this.progressBarPositionX = CANVAS_WIDTH / 2 - spriteProgressEmpty.width / 2;
         this.progressBarPositionY = 100;
         this.frenzyProgressAddition = 0.1;
         this.frenzyMeter = 0;
-        this.frenzyMeterStep = 30;
+        this.frenzyMeterStep = 37;
         this.maxFrenzyMeter = CANVAS_WIDTH + 100;
         this.enteredFrenzyMode = false;
+        this.frenzyProgressStepMultiplier = 2.25;
         this.currentFrame = 0;
         this.currentProgress = 0;
         this.level = level;
         this.progressBar = new ProgressBar();
         this.countdown = new Countdown();
-        this.progressBar.progressStep = 1;
-        this.progressBar.progressReductionStep = 0.33;
-        this.frenzyProgressAddition = this.progressBar.progressStep;
+        this.progressBar.startProgressStep = this.progressBar.currentProgressStep * this.level.progressStepMultiplier;
+        this.progressBar.currentProgress = this.progressBar.startProgressStep;
+        this.progressBar.progressReductionStepMultiplier = this.level.progressReductionStepMultiplier;
         this.opponent = new Opponent();
         this.evil = new Evil();
-        this.robotIngameImage = robotIngameOne;
-        this.robotLoseImage = robotLoseOne;
-        this.robotWinImage = robotWinOne;
-        this.maxFrenzyMeter = dist(0, 0, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+        this.cloud = new Cloud();
+        this.robotIngameImage = this.level.robotIngameImage;
+        this.robotLoseImage = this.level.robotLoseImage;
+        this.robotWinImage = this.level.robotWinImage;
     }
     setup() {
     }
     draw() {
+        this.maxFrenzyMeter = dist(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
         image(defaultBackground, 0, 0);
         this.timePlayingThisLevel++;
-        push();
-        imageMode(CENTER);
-        image(this.robotIngameImage, CANVAS_WIDTH / 2, CANVAS_WIDTH / 2 + 45);
-        pop();
+        this.drawRobot();
+        const forbiddenToProgress = this.opponent.state === OpponentState.WORKING || this.opponent.state === OpponentState.THINKING;
+        const playerInteractionConfirmed = (mouseIsPressed && mouseButton === LEFT || touches.length > 0)
+            && !(volumeControl.musicVolumeControl.isMouseOver() || volumeControl.sfxVolumeControl.isMouseOver());
+        const validPlayerInteractionConfirmed = !forbiddenToProgress
+            && this.opponent.state !== OpponentState.LOST
+            && this.opponent.state !== OpponentState.WON
+            && playerInteractionConfirmed;
+        const losingPlayerInteractionConfirmed = forbiddenToProgress
+            && playerInteractionConfirmed;
         this.drawFrenzyMeter();
         this.drawProgressBar();
         this.evil.draw();
+        if (validPlayerInteractionConfirmed)
+            this.cloud.draw(cloudEvilAnimation, CANVAS_WIDTH / 2, this.robotPositionY);
         this.opponent.draw();
         this.countdown.draw();
-        if (this.currentProgress >= this.progressBar.maxStep && !this.enteredWinning) {
-            this.enteredWinning = true;
-            localStorage.setItem(`${this.level.codename}-highscore`, this.countdown.elapsedTime.toString());
-            this.evil.state = EvilState.WON;
-            this.opponent.state = OpponentState.LOST;
-        }
-        if (this.countdown.remainingTime <= 0) {
-            this.resetFrenzyMode();
-            this.evil.state = EvilState.IDLE;
-            this.opponent.state = OpponentState.WON;
-        }
-        if (this.timePlayingThisLevel <= 5 || this.opponent.state === OpponentState.SHOCKED) {
+        if (this.timePlayingThisLevel <= 5
+            || this.opponent.state === OpponentState.SHOCKED
+            || this.opponent.state === OpponentState.LOST
+            || this.opponent.state === OpponentState.WON) {
             return;
         }
-        if (this.opponent.state === OpponentState.WORKING && this.currentProgress >= this.progressBar.progressReductionStep) {
-            this.currentProgress -= this.progressBar.progressReductionStep;
-        }
-        const forbiddenToProgress = this.opponent.state === OpponentState.WORKING || this.opponent.state === OpponentState.THINKING;
-        if (mouseIsPressed && mouseButton === LEFT || touches.length > 0) {
-            if (volumeControl.musicVolumeControl.isMouseOver() || volumeControl.sfxVolumeControl.isMouseOver())
-                return;
-            if (forbiddenToProgress) {
-                this.frenzyMeter = 0;
-                this.opponent.state = OpponentState.SHOCKED;
-                this.evil.state = EvilState.CAUGHT;
-                return;
+        if (this.currentProgress >= this.progressBar.maxStep && !this.enteredWinning) {
+            this.enteredWinning = true;
+            this.opponent.currentTimeBeforeGameEnd = this.opponent.timeBeforeGameEnd;
+            volumeControl.stopMusic();
+            this.resetFrenzyMode();
+            const stringInLocalStorage = `${this.level.codename}-highscore`;
+            this.level.bestTime = parseFloat(localStorage.getItem(stringInLocalStorage) || '0');
+            if (this.level.bestTime >= this.countdown.elapsedTime) {
+                localStorage.setItem(`${this.level.codename}-highscore`, this.countdown.elapsedTime.toString());
             }
+            volumeControl.playSound(soundNeuroOhDear);
+            this.evil.state = EvilState.WON;
+            this.opponent.state = OpponentState.LOST;
+            return;
+        }
+        if (this.countdown.remainingTime <= 0 && !this.enteredLosing) {
+            this.enteredLosing = true;
+            volumeControl.stopMusic();
+            this.opponent.currentTimeBeforeGameEnd = this.opponent.timeBeforeGameEnd;
+            this.resetFrenzyMode();
+            volumeControl.playSound(soundNeuroPog);
+            this.evil.state = EvilState.IDLE;
+            this.opponent.state = OpponentState.WON;
+            return;
+        }
+        if (this.opponent.state === OpponentState.WORKING) {
+            this.cloud.draw(cloudNeuroAnimation, CANVAS_WIDTH / 2, this.robotPositionY);
+            if (this.currentProgress >= this.progressBar.progressReductionStep * this.progressBar.progressReductionStepMultiplier)
+                this.currentProgress -= this.progressBar.progressReductionStep * this.progressBar.progressReductionStepMultiplier;
+        }
+        if (validPlayerInteractionConfirmed) {
             this.beInteracted();
+        }
+        else if (losingPlayerInteractionConfirmed) {
+            if (!this.enteredLosing) {
+                this.enteredLosing = true;
+                volumeControl.playSound(random([soundEvilOhNyooo, soundEvilWhoops]));
+            }
+            this.frenzyMeter = 0;
+            volumeControl.stopMusic();
+            this.opponent.state = OpponentState.SHOCKED;
+            this.evil.state = EvilState.CAUGHT;
         }
         else {
             this.beIdle();
         }
+        console.log('progressStep ', this.progressBar.currentProgressStep);
+        console.log('progressReductionStep ', this.progressBar.progressReductionStep);
     }
     drawProgressBar() {
         this.progressBar.currentProgress = this.currentProgress;
@@ -697,15 +882,36 @@ class BaseLevel {
         ellipse(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, this.frenzyMeter);
         pop();
     }
+    drawRobot() {
+        push();
+        imageMode(CENTER);
+        let imageToDraw = this.robotIngameImage;
+        if (!imageToDraw) {
+            console.log('no image to draw');
+            pop();
+            return;
+        }
+        if (this.opponent.state === OpponentState.LOST) {
+            imageToDraw = this.robotWinImage;
+        }
+        else if (this.opponent.state === OpponentState.WON) {
+            imageToDraw = this.robotLoseImage;
+        }
+        image(imageToDraw, CANVAS_WIDTH / 2, this.robotPositionY);
+        pop();
+    }
     beIdle() {
-        this.evil.state = EvilState.IDLE;
+        volumeControl.playMusic(musicAwkwardPiano);
+        if (this.evil.state !== EvilState.WON)
+            this.evil.state = EvilState.IDLE;
         if (this.frenzyMeter > 0) {
             this.resetFrenzyMode();
         }
     }
     beInteracted() {
         this.evil.state = EvilState.DESTROYING;
-        this.currentProgress += this.progressBar.progressStep;
+        volumeControl.playMusic(musicUrgency);
+        this.currentProgress += this.progressBar.currentProgressStep;
         if (this.frenzyMeter <= this.maxFrenzyMeter) {
             this.frenzyMeter += this.frenzyMeterStep;
         }
@@ -715,17 +921,26 @@ class BaseLevel {
     }
     initiateFrenzyMode() {
         this.enteredFrenzyMode = true;
-        this.progressBar.progressStep += this.frenzyProgressAddition;
+        this.progressBar.currentProgressStep = this.progressBar.startProgressStep * this.frenzyProgressStepMultiplier;
         this.evil.inFrenzy = true;
         this.progressBar.inFrenzy = true;
     }
     resetFrenzyMode() {
         this.enteredFrenzyMode = false;
+        this.progressBar.currentProgressStep = this.progressBar.startProgressStep;
         this.frenzyMeter = 0;
         this.evil.inFrenzy = false;
         this.progressBar.inFrenzy = false;
     }
     mouseClicked() {
+        if (this.evil.state === EvilState.IDLE
+            && this.opponent.state !== OpponentState.WORKING
+            && this.opponent.state !== OpponentState.THINKING
+            && this.opponent.state !== OpponentState.LOST
+            && this.opponent.state !== OpponentState.WON
+            && !(volumeControl.musicVolumeControl.isMouseOver() || volumeControl.sfxVolumeControl.isMouseOver())) {
+            volumeControl.playSound(random([soundEvilHa, soundEvilHehe, soundEvilHehehe]));
+        }
     }
 }
 class HelperStateManager {
@@ -750,12 +965,14 @@ class HelperStateManager {
         levelSelection.setup();
     }
     switchToLoseScreen(image, text) {
+        volumeControl.playMusic(musicMenu);
         loseScreen.bg = image;
         loseScreen.text = text;
         this.currentScene = loseScreen;
         introSplashScreen.setup();
     }
     initiateLevel(level) {
+        volumeControl.playMusic(musicAwkwardPiano);
         this.currentScene = new BaseLevel(level);
     }
 }
@@ -824,8 +1041,7 @@ class VolumeControlElement {
             width: this.button.width,
             height: this.button.height
         };
-        this.slider = createSlider(0, this.maxValue, this.defaultValue);
-        this.slider.size(this.sliderLength, 20);
+        this.slider = createSlider(0, this.maxValue, this.defaultValue, 0);
         this.slider.position(this.button.positionX - this.sliderLength / 2 + this.button.width / 2, this.button.positionY + this.button.height + this.sliderLength / 2);
         this.slider.style('width', `${this.sliderLength}px`);
         this.slider.style('height', '20px');
@@ -865,6 +1081,26 @@ class VolumeControlElement {
             mouseY > this.triggerRect.y + this.triggerRect.height) {
             return true;
         }
+    }
+}
+class Cloud {
+    constructor() {
+        this.defaultImage = cloudEvilImages[0];
+        this.currentFrame = 0;
+        this.size = 0.9;
+    }
+    draw(animation, x, y) {
+        push();
+        imageMode(CENTER);
+        if (this.currentFrame >= animation.length) {
+            this.currentFrame = 0;
+        }
+        const currentFrameImage = animation[this.currentFrame].image;
+        image(currentFrameImage, x, y, this.defaultImage.width * this.size, this.defaultImage.height * this.size);
+        if (frameCount % animation[this.currentFrame].duration === 0) {
+            this.currentFrame = (this.currentFrame + 1) % animation.length;
+        }
+        pop();
     }
 }
 class Countdown {
@@ -991,20 +1227,25 @@ class Opponent {
         this.state = OpponentState.WORKING;
         this.currentFrame = 0;
         this.characterSize = 0.9;
-        this.timeBeforeGameEnd = FRAMERATE * 4;
-        this.currentTimeBeforeGameEnd = this.timeBeforeGameEnd;
+        this.timeBeforeGameEnd = FRAMERATE * 8;
+        this.timeBeforeGameEndIfLost = FRAMERATE * 4;
+        this.currentTimeBeforeGameEnd = this.timeBeforeGameEndIfLost;
         this.characterWidth = workingOpponentImages[0].width * this.characterSize;
         this.characterHeight = workingOpponentImages[0].height * this.characterSize;
         this.offsetX = 50;
         this.offsetY = 10;
         this.positionX = CANVAS_WIDTH - this.characterWidth + this.offsetX;
         this.positionY = CANVAS_HEIGHT - this.characterHeight + this.offsetY;
-        this.minWorkingTime = 4;
-        this.maxWorkingTime = 6;
-        this.minDistractionTime = 5;
-        this.maxDistractionTime = 7;
-        this.minFoundTime = 1.35;
-        this.maxFoundTime = 1.75;
+        this.minWorkingTime = 0.5;
+        this.maxWorkingTime = 2;
+        this.minDistractionTime = 0.75;
+        this.maxDistractionTime = 4;
+        this.minFoundTime = 1.1;
+        this.maxFoundTime = 1.6;
+        this.chanceToTrickThink = 0.3;
+        this.chanceToTrickFound = 0.7;
+        this.trickedThink = random(0, 1);
+        this.trickedFound = random(0, 7);
         this.timeUntilStateChange = random(FRAMERATE * this.minWorkingTime, FRAMERATE * this.maxWorkingTime);
     }
     draw() {
@@ -1040,16 +1281,36 @@ class Opponent {
     handleStateChange() {
         switch (this.state) {
             case OpponentState.WORKING:
+                volumeControl.playSound(soundNeuroErm);
                 this.changeToStateAfterAnimationEnd(thinkingOpponentAnimation, OpponentState.THINKING);
                 break;
             case OpponentState.THINKING:
-                this.changeToState(OpponentState.DISTRACTED, FRAMERATE * this.minDistractionTime, FRAMERATE * this.maxDistractionTime);
+                let randomizerThinking = random(0, 1);
+                if (randomizerThinking <= this.chanceToTrickThink && this.trickedThink > 0) {
+                    this.trickedThink--;
+                    this.changeToState(OpponentState.WORKING, FRAMERATE * this.minWorkingTime, FRAMERATE * this.maxWorkingTime);
+                }
+                else {
+                    this.trickedThink = random(0, 2);
+                    volumeControl.playSound(soundToolbox);
+                    this.changeToState(OpponentState.DISTRACTED, FRAMERATE * this.minDistractionTime, FRAMERATE * this.maxDistractionTime);
+                }
                 break;
             case OpponentState.DISTRACTED:
+                volumeControl.playSound(random([soundNeuroHeart, soundNeuroWuu]));
                 this.changeToState(OpponentState.FOUND, FRAMERATE * this.minFoundTime, FRAMERATE * this.maxFoundTime);
                 break;
             case OpponentState.FOUND:
-                this.changeToState(OpponentState.WORKING, FRAMERATE * this.minWorkingTime, FRAMERATE * this.maxWorkingTime);
+                let randomizerFound = random(0, 1);
+                if (randomizerFound <= this.chanceToTrickFound && this.trickedFound > 0) {
+                    this.trickedFound--;
+                    volumeControl.playSound(soundToolbox);
+                    this.changeToState(OpponentState.DISTRACTED, FRAMERATE * this.minDistractionTime, FRAMERATE * this.maxDistractionTime);
+                }
+                else {
+                    this.trickedFound = random(0, 3);
+                    this.changeToState(OpponentState.WORKING, FRAMERATE * this.minWorkingTime, FRAMERATE * this.maxWorkingTime);
+                }
                 break;
             case OpponentState.SHOCKED:
                 break;
@@ -1076,9 +1337,12 @@ class Opponent {
     drawWorking() {
         push();
         translate(this.positionX + (this.characterWidth / 2) + 45, this.positionY + this.characterHeight / 2 + 31);
-        rotate(sin(frameCount * 0.5) * 0.75);
+        let armRotation = sin(frameCount * 0.5) * 0.75;
+        rotate(armRotation);
         image(workingArmImage, -workingArmImage.width, -workingArmImage.height / 2, workingArmImage.width, workingArmImage.height);
         pop();
+        if (armRotation <= -0.7) {
+        }
         this.animate(workingOpponentAnimation, this.positionX, this.positionY);
     }
     drawThinking() {
@@ -1124,11 +1388,6 @@ class Opponent {
             this.currentFrame = 0;
         }
         const currentFrameImage = animation[this.currentFrame].image;
-        console.log(`state  ` + this.state);
-        console.log(`currentFrame  ` + this.currentFrame);
-        console.log(`%  ` + this.frameCountSinceAnimationStart % animation[this.currentFrame].duration);
-        console.log(`frameCountSinceAnimationStart  ` + this.frameCountSinceAnimationStart);
-        console.log(`animation[this.currentFrame].duration  ` + animation[this.currentFrame].duration);
         image(currentFrameImage, x, y, this.characterWidth, this.characterHeight);
         if (this.frameCountSinceAnimationStart % animation[this.currentFrame].duration === 0 && this.frameCountSinceAnimationStart !== 0) {
             this.currentFrame = (this.currentFrame + 1) % animation.length;
@@ -1139,8 +1398,10 @@ class ProgressBar {
     constructor() {
         this.currentProgress = 0;
         this.maxStep = 1000;
-        this.progressStep = 1;
-        this.progressReductionStep = 0.5;
+        this.startProgressStep = 2;
+        this.currentProgressStep = 2;
+        this.progressReductionStep = 0.75;
+        this.progressReductionStepMultiplier = 1;
         this.spriteBase = spriteProgressBase;
         this.spriteEmpty = spriteProgressEmpty;
         this.spriteFull = spriteProgressFull;
@@ -1167,91 +1428,122 @@ class LevelSelection {
         this.buttonY = 50;
         this.buttonWidth = 200;
         this.buttonHeight = 50;
+    }
+    setup() {
         this.levelsArray = [
             {
                 codename: 'level-one',
                 isCompleted: false,
+                canBePlayed: true,
                 robotIngameImage: robotIngameOne,
                 robotLoseImage: robotLoseOne,
                 robotWinImage: robotWinOne,
-                maxWorkingTimeMultiplier: 0.9,
+                selectionButtonActive: levelOneButtonActive,
+                selectionButtonHover: levelOneButtonHover,
+                selectionButtonDisabled: levelOneButtonDisabled,
+                selectionButtonComplete: levelOneButtonComplete,
+                selectionButtonCompleteHover: levelOneButtonCompleteHover,
+                progressStepMultiplier: 1,
+                progressReductionStepMultiplier: 1,
             },
             {
                 codename: 'level-two',
                 isCompleted: false,
+                canBePlayed: false,
                 robotIngameImage: robotIngameTwo,
                 robotLoseImage: robotLoseTwo,
                 robotWinImage: robotWinTwo,
-                progressStepMultiplier: .97,
-                progressReductionStepMultiplier: 1.05,
+                selectionButtonActive: levelTwoButtonActive,
+                selectionButtonHover: levelTwoButtonHover,
+                selectionButtonDisabled: levelTwoButtonDisabled,
+                selectionButtonComplete: levelTwoButtonComplete,
+                selectionButtonCompleteHover: levelTwoButtonCompleteHover,
+                progressStepMultiplier: 1,
+                progressReductionStepMultiplier: 1,
             },
             {
                 codename: 'level-three',
                 isCompleted: false,
+                canBePlayed: false,
                 robotIngameImage: robotIngameThree,
                 robotLoseImage: robotLoseThree,
                 robotWinImage: robotWinThree,
-                progressStepMultiplier: 2,
-                progressReductionStepMultiplier: 0.25,
-                minWorkingTimeMultiplier: 0.25,
-                maxWorkingTimeMultiplier: 1.1,
-                minFoundTimeMultiplier: 0.5,
+                selectionButtonActive: levelThreeButtonActive,
+                selectionButtonHover: levelThreeButtonHover,
+                selectionButtonDisabled: levelThreeButtonDisabled,
+                selectionButtonComplete: levelThreeButtonComplete,
+                selectionButtonCompleteHover: levelThreeButtonCompleteHover,
+                progressStepMultiplier: 1,
+                progressReductionStepMultiplier: 1,
             }
         ];
         this.levelArrayButtons = [
             {
                 level: this.levelsArray[0],
-                positionX: 100,
-                positionY: 50,
-                height: 50,
-                width: 200
+                button: new Button({
+                    positionX: 150,
+                    positionY: 100,
+                    spriteIdle: levelOneButtonActive,
+                    spriteHover: levelOneButtonHover,
+                    spriteDisabled: levelOneButtonDisabled,
+                    spriteDisabledHover: levelOneButtonDisabled,
+                    wobble: true,
+                }),
             },
             {
                 level: this.levelsArray[1],
-                positionX: 375,
-                positionY: 50,
-                height: 50,
-                width: 100
+                button: new Button({
+                    positionX: 145,
+                    positionY: 375,
+                    spriteIdle: levelTwoButtonActive,
+                    spriteHover: levelTwoButtonHover,
+                    spriteDisabled: levelTwoButtonDisabled,
+                    spriteDisabledHover: levelTwoButtonDisabled,
+                    wobble: true,
+                }),
             },
             {
                 level: this.levelsArray[2],
-                positionX: 100,
-                positionY: 150,
-                height: 50,
-                width: 200
+                button: new Button({
+                    positionX: 450,
+                    positionY: 105,
+                    spriteIdle: levelThreeButtonActive,
+                    spriteHover: levelThreeButtonHover,
+                    spriteDisabled: levelThreeButtonDisabled,
+                    spriteDisabledHover: levelThreeButtonDisabled,
+                    wobble: true,
+                }),
             },
         ];
-    }
-    setup() {
     }
     draw() {
         for (const [index, button] of this.levelArrayButtons.entries()) {
             const stringInLocalStorage = `${button.level.codename}-highscore`;
+            if (index > 0) {
+                const stringPreviousLevelInLocalStorage = `${this.levelArrayButtons[index - 1].level.codename}-highscore`;
+                button.level.canBePlayed = !!localStorage.getItem(stringPreviousLevelInLocalStorage);
+            }
             button.level.isCompleted = !!localStorage.getItem(stringInLocalStorage);
             button.level.bestTime = parseFloat(localStorage.getItem(stringInLocalStorage) || '0');
-            if (button.level.isCompleted)
-                fill(COLOR_WHITE);
-            else
-                fill(COLOR_LIGHT_PINK);
-            rect(button.positionX, button.positionY, button.width, button.height);
-            fill(COLOR_DARK_PINK);
-            textSize(20);
-            textAlign(CENTER, CENTER);
-            text(`Level ${index + 1}`, button.positionX + button.width / 2, button.positionY + button.height / 2);
-            fill(COLOR_SATURATED_PINK);
-            textSize(14);
+            if (button.level.isCompleted) {
+                button.button.spriteIdle = button.level.selectionButtonComplete;
+                button.button.spriteHover = button.level.selectionButtonCompleteHover;
+            }
+            if (!button.level.canBePlayed) {
+                button.button.spriteIdle = button.level.selectionButtonDisabled;
+                button.button.spriteHover = button.level.selectionButtonDisabled;
+                button.button.wobble = false;
+            }
+            button.button.draw();
+            fill(COLOR_DARK);
             if (button.level.bestTime)
-                text(`Best time: ${formatTime(button.level.bestTime)}`, button.positionX + button.width / 2, button.positionY + button.height / 2 + 40);
+                text(`Best time: ${formatTime(button.level.bestTime)}`, button.button.positionX + 10, button.button.positionY + button.button.height + 25);
         }
     }
     mouseClicked() {
         for (const button of this.levelArrayButtons) {
-            if (mouseX > button.positionX &&
-                mouseX < button.positionX + button.width &&
-                mouseY > button.positionY &&
-                mouseY < button.positionY + button.height) {
+            if (button.button.isMouseOver() && button.level.canBePlayed)
                 stateManager.initiateLevel(button.level);
-            }
         }
     }
 }
