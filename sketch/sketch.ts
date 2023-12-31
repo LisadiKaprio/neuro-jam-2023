@@ -29,6 +29,7 @@ let soundClankTap: p5.SoundFile;
 let soundToolbox: p5.SoundFile;
 let soundToolboxTwo: p5.SoundFile;
 let soundToolboxThree: p5.SoundFile;
+let soundDeadBirdsOverHead: p5.SoundFile;
 
 let buttonHelpIdle: p5.Image;
 let buttonHelpHover: p5.Image;
@@ -175,6 +176,8 @@ function preload() {
   soundToolboxTwo = loadSound(`./audio/sound-toolbox-two.wav`);
   //@ts-ignore
   soundToolboxThree = loadSound(`./audio/sound-toolbox-three.wav`);
+  //@ts-ignore
+  soundDeadBirdsOverHead = loadSound(`./audio/dead-birds-over-head.wav`);
   customFont = loadFont('./fonts/CherryBombOne-Regular.ttf');
   buttonHelpIdle = loadImage(`./art/interface/button-help.png`);
   buttonHelpHover = loadImage(`./art/interface/button-help-hover.png`);

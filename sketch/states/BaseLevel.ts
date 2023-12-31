@@ -29,6 +29,7 @@ class BaseLevel {
     private currentFrame = 0;
 
     private currentProgress = 0;
+    private isBestTime = false;
 
     constructor(level: Level) {
         this.level = level;
@@ -61,7 +62,7 @@ class BaseLevel {
 
         // handle winning scene        
         if (this.opponent.currentTimeBeforeGameEnd <= 0) {
-            stateManager.switchToWinMatchScreen(this.level.robotWinImage, this.level.codename === 'level-three');
+            stateManager.switchToWinMatchScreen(this.level.robotWinImage, this.isBestTime, this.level.codename === 'level-three');
         }
 
         this.drawRobot();
@@ -76,6 +77,7 @@ class BaseLevel {
             && this.opponent.state !== OpponentState.LOST
             && this.opponent.state !== OpponentState.WON
             && playerInteractionConfirmed
+            && this.countdown.remainingTime > 0
         const losingPlayerInteractionConfirmed = forbiddenToProgress
             && playerInteractionConfirmed
 
@@ -101,7 +103,8 @@ class BaseLevel {
 
             const stringInLocalStorage = `${this.level.codename}-highscore`;
             this.level.bestTime = parseFloat(localStorage.getItem(stringInLocalStorage) || '0');
-            if (this.countdown.elapsedTime >= this.level.bestTime) {
+            if (!this.level.bestTime || this.countdown.elapsedTime <= this.level.bestTime) {
+                this.isBestTime = true;
                 localStorage.setItem(`${this.level.codename}-highscore`, this.countdown.elapsedTime.toString());
             }
             volumeControl.playSound(soundNeuroOhDear);
@@ -125,8 +128,6 @@ class BaseLevel {
             this.cloud.draw(cloudNeuroAnimation, CANVAS_WIDTH / 2, this.robotPositionY);
             if (this.currentProgress >= this.progressBar.progressReductionStep * this.progressBar.progressReductionStepMultiplier) this.currentProgress -= this.progressBar.progressReductionStep * this.progressBar.progressReductionStepMultiplier;
         }
-
-
 
         if (validPlayerInteractionConfirmed) {
             this.beInteracted();

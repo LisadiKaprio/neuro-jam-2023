@@ -21,8 +21,8 @@ class HelperStateManager {
         this.currentScene.mouseClicked();
     }
 
-    switchToWinMatchScreen(robot: p5.Image, finalLevel: boolean) {
-        const winMatchScreen = new WinMatchScreen(robot, finalLevel);
+    switchToWinMatchScreen(robot: p5.Image, isBestTime: boolean, finalLevel: boolean) {
+        const winMatchScreen = new WinMatchScreen(robot, isBestTime, finalLevel);
         this.currentScene = winMatchScreen;
     }
 
@@ -42,7 +42,8 @@ class HelperStateManager {
     }
 
     switchToLoseScreen(image: p5.Image, text: string) {
-        volumeControl.playMusic(musicMenu)
+        volumeControl.playSound(soundDeadBirdsOverHead);
+        volumeControl.playMusic(musicMenu);
 
         loseScreen.bg = image;
         loseScreen.text = text;

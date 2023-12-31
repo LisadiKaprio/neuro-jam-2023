@@ -19,8 +19,8 @@ class Opponent {
     public currentFrame: number = 0;
     private characterSize = 0.9;
 
-    public timeBeforeGameEnd = FRAMERATE * 8;
-    private timeBeforeGameEndIfLost = FRAMERATE * 4;
+    public timeBeforeGameEnd = FRAMERATE * 5;
+    private timeBeforeGameEndIfLost = FRAMERATE * 3;
     // if lost not by misclick, the time is set from BaseLevel
     public currentTimeBeforeGameEnd = this.timeBeforeGameEndIfLost;
 
