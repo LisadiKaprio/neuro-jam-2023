@@ -34,7 +34,6 @@ class LevelSelection {
     private buttonHeight: number;
 
     public gameIsFinished = false;
-    private gameFinishedImage: p5.Image;
 
     public levelsArray: Level[];
     public levelArrayButtons: LevelButton[];
@@ -137,10 +136,11 @@ class LevelSelection {
         image(levelsScreen, 0, 0)
         if (this.gameIsFinished) {
             push()
-            rotate(sin(frameCount * 0.1) * 0.1)
-            image(this.gameFinishedImage, 475, 355);
+            imageMode(CENTER)
+            translate(478 + completeImage.width / 2, 350 + completeImage.height / 2)
+            rotate(sin(frameCount * 0.03) * 0.07)
+            image(completeImage, 0, 0);
             pop()
-            return;
         }
         for (const [index, button] of this.levelArrayButtons.entries()) {
 

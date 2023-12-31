@@ -601,14 +601,19 @@ class IntroSplashScreen {
     }
     draw() {
         image(stripesBackground, 0, 0);
+        wobble(true, CENTER, splashScreen, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, splashScreen.width * 1, splashScreen.height * 1, 0.1, 0.03, CANVAS_WIDTH - splashScreen.width * 0.9 / 2, CANVAS_HEIGHT - splashScreen.height * 0.9 / 3);
         push();
-        image(splashScreen, -splashScreen.width / 2 - 150, -60, splashScreen.width * 1.5, splashScreen.height * 1.5);
+        fill(255, 255, 255, 200);
+        noStroke();
+        rect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        pop();
+        push();
         fill(COLOR_YELLOW);
         strokeWeight(5);
         stroke(COLOR_SATURATED_PINK);
         textSize(30);
         textAlign(CENTER, CENTER);
-        text("Click anywhere to continue", CANVAS_WIDTH - 250, CANVAS_HEIGHT - textSize() - 25);
+        text("Click to start the game!", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
         pop();
     }
     mouseClicked() {
@@ -867,6 +872,7 @@ class BaseLevel {
         const validPlayerInteractionConfirmed = !forbiddenToProgress
             && this.opponent.state !== OpponentState.LOST
             && this.opponent.state !== OpponentState.WON
+            && this.opponent.state !== OpponentState.SHOCKED
             && playerInteractionConfirmed
             && this.countdown.remainingTime > 0;
         const losingPlayerInteractionConfirmed = forbiddenToProgress
@@ -1686,10 +1692,11 @@ class LevelSelection {
         image(levelsScreen, 0, 0);
         if (this.gameIsFinished) {
             push();
-            rotate(sin(frameCount * 0.1) * 0.1);
-            image(this.gameFinishedImage, 475, 355);
+            imageMode(CENTER);
+            translate(478 + completeImage.width / 2, 350 + completeImage.height / 2);
+            rotate(sin(frameCount * 0.03) * 0.07);
+            image(completeImage, 0, 0);
             pop();
-            return;
         }
         for (const [index, button] of this.levelArrayButtons.entries()) {
             const stringInLocalStorage = `${button.level.codename}-highscore`;

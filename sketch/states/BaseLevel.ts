@@ -76,6 +76,7 @@ class BaseLevel {
         const validPlayerInteractionConfirmed = !forbiddenToProgress
             && this.opponent.state !== OpponentState.LOST
             && this.opponent.state !== OpponentState.WON
+            && this.opponent.state !== OpponentState.SHOCKED
             && playerInteractionConfirmed
             && this.countdown.remainingTime > 0
         const losingPlayerInteractionConfirmed = forbiddenToProgress
