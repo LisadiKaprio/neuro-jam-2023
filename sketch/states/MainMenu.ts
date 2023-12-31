@@ -1,26 +1,32 @@
 /// <reference path="../helpers/VolumeControl.ts" />
 /// <reference path="../helpers/TextButton.ts" />
 class MainMenu {
-    private buttonX: number;
-    private buttonY: number;
     private buttonWidth: number;
     private buttonHeight: number;
 
     private startGameButton: TextButton;
+    private howToGameButton: TextButton;
 
     constructor() {
-        this.buttonX = 200;
-        this.buttonY = 400;
         this.buttonWidth = 200;
         this.buttonHeight = 50;
         this.startGameButton = new TextButton({
-            positionX: this.buttonX,
-            positionY: this.buttonY,
+            positionX: 150,
+            positionY: 500,
             text: 'Start Game',
             onClick: () => {
                 stateManager.switchToLevelSelection();
             },
-            size: 50
+            outlineColor: COLOR_SATURATED_PINK
+        });
+        this.howToGameButton = new TextButton({
+            positionX: 150,
+            positionY: 550,
+            text: 'How to play',
+            onClick: () => {
+                tutorial.isShown = true;
+            },
+            outlineColor: COLOR_SATURATED_PINK
         });
     }
 
@@ -32,6 +38,7 @@ class MainMenu {
     }
 
     draw() {
+        image(stripesBackground, 0, 0);
 
         wobble(
             true,
@@ -47,10 +54,12 @@ class MainMenu {
             CANVAS_HEIGHT - splashScreen.height * 0.9 / 3
         )
         this.startGameButton.draw();
+        this.howToGameButton.draw();
     }
 
     mouseClicked() {
         this.startGameButton.mouseClicked();
+        this.howToGameButton.mouseClicked();
     }
 }
 const mainMenu = new MainMenu();

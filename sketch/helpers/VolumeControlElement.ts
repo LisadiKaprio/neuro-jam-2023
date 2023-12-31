@@ -76,5 +76,4 @@ class VolumeControlElement {
             return true;
         }
     }
-
 }

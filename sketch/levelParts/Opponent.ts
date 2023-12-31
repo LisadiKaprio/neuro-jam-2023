@@ -38,8 +38,8 @@ class Opponent {
     public minDistractionTime = 0.75;
     public maxDistractionTime = 4;
 
-    public minFoundTime = 1.1;
-    public maxFoundTime = 1.6;
+    public minFoundTime = 0.9;
+    public maxFoundTime = 1.4;
 
     public chanceToTrickThink = 0.3;
     public chanceToTrickFound = 0.7;
@@ -182,10 +182,6 @@ class Opponent {
 
     drawLost() {
         this.currentTimeBeforeGameEnd -= 1;
-        if (this.currentTimeBeforeGameEnd <= 0) {
-            this.currentTimeBeforeGameEnd = this.timeBeforeGameEnd
-            stateManager.switchToLevelSelection();
-        }
         this.animate(lostOpponentAnimation, this.positionX, this.positionY)
     }
 

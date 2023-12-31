@@ -6,8 +6,8 @@ class LoseScreen {
 
     constructor() {
         this.backButton = new TextButton({
-            positionX: 200,
-            positionY: 100,
+            positionX: CANVAS_WIDTH / 4 * 3,
+            positionY: CANVAS_HEIGHT / 4 + 75,
             text: 'Try again',
             onClick: () => { stateManager.switchToLevelSelection() }
         })

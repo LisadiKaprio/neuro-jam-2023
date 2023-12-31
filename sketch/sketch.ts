@@ -48,11 +48,14 @@ let spriteProgressFrenzy: p5.Image;
 
 let defaultBackground: p5.Image;
 
+let levelsScreen: p5.Image;
 let splashScreen: p5.Image;
+let stripesBackground: p5.Image;
 let tutorialScreenshot: p5.Image;
 
 let lostCaughtBG: p5.Image;
 let lostTimeoutBG: p5.Image;
+let winScreen: p5.Image;
 
 let idleEvilImages: p5.Image[];
 let idleEvilAnimation: Frame[];
@@ -188,10 +191,13 @@ function preload() {
   spriteProgressFull = loadImage('./art/interface/progress-bar-full.png');
   spriteProgressFrenzy = loadImage('./art/interface/progress-bar-frenzy.png');
   defaultBackground = loadImage('./art/bg/default.jpg');
+  levelsScreen = loadImage('./art/bg/levels-screen.png');
+  stripesBackground = loadImage('./art/bg/stripes.png');
   splashScreen = loadImage('./art/bg/splashscreen.png');
   tutorialScreenshot = loadImage('./art/interface/tutorial-screenshots.png');
   lostCaughtBG = loadImage('./art/bg/lost-caught-bg.png');
   lostTimeoutBG = loadImage('./art/bg/lost-timeout-bg.png');
+  winScreen = loadImage('./art/bg/winscreen.png');
   robotIngameOne = loadImage(`${robotsFilePath}/ingame-1.png`);
   robotIngameTwo = loadImage(`${robotsFilePath}/ingame-2.png`);
   robotIngameThree = loadImage(`${robotsFilePath}/ingame-3.png`);
@@ -554,6 +560,14 @@ function draw() {
 }
 
 function mousePressed() {
+  tutorial.isShown = false;
   stateManager.mousePressed();
   tutorial.mouseClicked();
+}
+
+
+function keyPressed() {
+  if (keyCode === ESCAPE) {
+    stateManager.switchToMainMenu();
+  }
 }

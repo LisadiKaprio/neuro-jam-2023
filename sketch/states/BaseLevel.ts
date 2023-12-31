@@ -1,7 +1,7 @@
 /// <reference path="../helpers/HelperStateManager.ts" />
 /// <reference path="../Types.ts" />
 class BaseLevel {
-    private robotPositionY = CANVAS_WIDTH / 2 + 45;
+    private robotPositionY = CANVAS_WIDTH / 2 + 37;
     private cloud: Cloud;
 
     public clickCooldownMeter = 0;
@@ -59,6 +59,11 @@ class BaseLevel {
         }
         this.clickCooldownMeter++;
 
+        // handle winning scene        
+        if (this.opponent.currentTimeBeforeGameEnd <= 0) {
+            stateManager.switchToWinMatchScreen(this.level.robotWinImage, this.level.codename === 'level-three');
+        }
+
         this.drawRobot();
 
         const forbiddenToProgress = this.opponent.state === OpponentState.WORKING || this.opponent.state === OpponentState.THINKING
@@ -96,7 +101,7 @@ class BaseLevel {
 
             const stringInLocalStorage = `${this.level.codename}-highscore`;
             this.level.bestTime = parseFloat(localStorage.getItem(stringInLocalStorage) || '0');
-            if (this.level.bestTime >= this.countdown.elapsedTime) {
+            if (this.countdown.elapsedTime >= this.level.bestTime) {
                 localStorage.setItem(`${this.level.codename}-highscore`, this.countdown.elapsedTime.toString());
             }
             volumeControl.playSound(soundNeuroOhDear);

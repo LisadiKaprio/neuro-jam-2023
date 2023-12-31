@@ -21,6 +21,16 @@ class HelperStateManager {
         this.currentScene.mouseClicked();
     }
 
+    switchToWinMatchScreen(robot: p5.Image, finalLevel: boolean) {
+        const winMatchScreen = new WinMatchScreen(robot, finalLevel);
+        this.currentScene = winMatchScreen;
+    }
+
+    switchToWinEndScreen() {
+        this.currentScene = winEndScreen;
+        winEndScreen.setup();
+    }
+
     switchToMainMenu() {
         this.currentScene = mainMenu;
         mainMenu.setup();

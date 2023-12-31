@@ -43,7 +43,7 @@ class Tutorial {
         text("Neuro tends to lose her tools a lot while building her robots.", CANVAS_WIDTH / 2, 125);
         text("Ruin her career while she is distracted!", CANVAS_WIDTH / 2, 155);
         stroke(COLOR_DARK_PINK);
-        text("Hold left mouse button to reassamble the robot.", CANVAS_WIDTH / 2, CANVAS_HEIGHT - 190);
+        text("Hold left mouse button to reassemble the robot.", CANVAS_WIDTH / 2, CANVAS_HEIGHT - 190);
         text("Release the button before Neuro finds the right tool and turns around.", CANVAS_WIDTH / 2, CANVAS_HEIGHT - 160);
         noStroke();
         text("Be careful, or you'll be thrown into Neuro's dungeon!", CANVAS_WIDTH / 2, CANVAS_HEIGHT - 120);
@@ -73,11 +73,6 @@ class Tutorial {
     }
 
     public mouseClicked() {
-        if (this.isShown) {
-            console.log('isShown')
-            this.isShown = false;
-            return;
-        }
         if (this.isMouseOver()) {
             this.openTime = millis();
             console.log(this.openTime)

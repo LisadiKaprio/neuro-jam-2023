@@ -56,7 +56,7 @@ class LevelSelection {
                 selectionButtonDisabled: levelOneButtonDisabled,
                 selectionButtonComplete: levelOneButtonComplete,
                 selectionButtonCompleteHover: levelOneButtonCompleteHover,
-                progressStepMultiplier: 1,
+                progressStepMultiplier: 1.2,
                 progressReductionStepMultiplier: 1,
             } as Level,
             {
@@ -87,15 +87,15 @@ class LevelSelection {
                 selectionButtonComplete: levelThreeButtonComplete,
                 selectionButtonCompleteHover: levelThreeButtonCompleteHover,
                 progressStepMultiplier: 1,
-                progressReductionStepMultiplier: 1,
+                progressReductionStepMultiplier: 1.15,
             } as Level
         ]
         this.levelArrayButtons = [
             {
                 level: this.levelsArray[0],
                 button: new Button({
-                    positionX: 150,
-                    positionY: 100,
+                    positionX: 95,
+                    positionY: 90,
                     spriteIdle: levelOneButtonActive,
                     spriteHover: levelOneButtonHover,
                     spriteDisabled: levelOneButtonDisabled,
@@ -106,8 +106,8 @@ class LevelSelection {
             {
                 level: this.levelsArray[1],
                 button: new Button({
-                    positionX: 145,
-                    positionY: 375,
+                    positionX: 95,
+                    positionY: 355,
                     spriteIdle: levelTwoButtonActive,
                     spriteHover: levelTwoButtonHover,
                     spriteDisabled: levelTwoButtonDisabled,
@@ -118,7 +118,7 @@ class LevelSelection {
             {
                 level: this.levelsArray[2],
                 button: new Button({
-                    positionX: 450,
+                    positionX: 475,
                     positionY: 105,
                     spriteIdle: levelThreeButtonActive,
                     spriteHover: levelThreeButtonHover,
@@ -131,6 +131,7 @@ class LevelSelection {
     }
 
     draw() {
+        image(levelsScreen, 0, 0)
         for (const [index, button] of this.levelArrayButtons.entries()) {
 
             const stringInLocalStorage = `${button.level.codename}-highscore`;
@@ -153,7 +154,14 @@ class LevelSelection {
             button.button.draw();
 
             fill(COLOR_DARK);
-            if (button.level.bestTime) text(`Best time: ${formatTime(button.level.bestTime)}`, button.button.positionX + 10, button.button.positionY + button.button.height + 25)
+            if (button.level.bestTime) {
+                push()
+                strokeWeight(2);
+                stroke(COLOR_DARK);
+                fill(COLOR_WHITE)
+                text(`Best time: ${formatTime(button.level.bestTime)}`, button.button.positionX + 10, button.button.positionY + button.button.height + 20)
+                pop()
+            }
         }
     }
 

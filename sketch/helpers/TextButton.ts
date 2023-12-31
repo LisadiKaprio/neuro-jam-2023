@@ -4,26 +4,32 @@ type TextButtonConfig = {
     text: string;
     onClick: () => void;
     size?: number;
+    outlineColor?: string;
 }
 
 class TextButton {
     public size = 20;
 
+    a = 1.75
+
     public positionX: number;
     public positionY: number;
     public text: string;
     public onClick: () => void;
+    public outlineColor: string;
 
     constructor(buttonConfig: TextButtonConfig) {
         this.positionX = buttonConfig.positionX || 0;
         this.positionY = buttonConfig.positionY || 0;
         this.text = buttonConfig.text;
         this.onClick = buttonConfig.onClick;
-        this.size = buttonConfig.size || 20;
+        this.size = buttonConfig.size || 30;
+        this.outlineColor = buttonConfig.outlineColor || COLOR_MAIN_PINK;
     }
 
     draw() {
         push();
+        textAlign(CENTER, CENTER);
         if (this.isMouseOver()) {
             strokeWeight(3);
             stroke(COLOR_WHITE);
@@ -32,7 +38,7 @@ class TextButton {
             fill(COLOR_SATURATED_PINK);
         } else {
             strokeWeight(2);
-            stroke(COLOR_MAIN_PINK);
+            stroke(this.outlineColor);
             textSize(this.size)
             fill(COLOR_WHITE);
         }
@@ -45,9 +51,9 @@ class TextButton {
         const y = this.positionY - this.size / 2;
         if (
             mouseX > x &&
-            mouseX < x + textWidth(this.text) * 1.1 &&
+            mouseX < x + textWidth(this.text) * this.a &&
             mouseY > y &&
-            mouseY < y + this.size * 1.25
+            mouseY < y + this.size * this.a
         ) {
             return true;
         }
@@ -58,9 +64,9 @@ class TextButton {
         const y = this.positionY - this.size / 2;
         if (
             mouseX < x ||
-            mouseX > x + textWidth(this.text) * 1.1 ||
+            mouseX > x + textWidth(this.text) * this.a ||
             mouseY < y ||
-            mouseY > y + this.size * 1.25
+            mouseY > y + this.size * this.a
         ) {
             return true;
         }

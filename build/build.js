@@ -75,10 +75,13 @@ let spriteProgressEmpty;
 let spriteProgressFull;
 let spriteProgressFrenzy;
 let defaultBackground;
+let levelsScreen;
 let splashScreen;
+let stripesBackground;
 let tutorialScreenshot;
 let lostCaughtBG;
 let lostTimeoutBG;
+let winScreen;
 let idleEvilImages;
 let idleEvilAnimation;
 let evilWorkingImages;
@@ -172,10 +175,13 @@ function preload() {
     spriteProgressFull = loadImage('./art/interface/progress-bar-full.png');
     spriteProgressFrenzy = loadImage('./art/interface/progress-bar-frenzy.png');
     defaultBackground = loadImage('./art/bg/default.jpg');
+    levelsScreen = loadImage('./art/bg/levels-screen.png');
+    stripesBackground = loadImage('./art/bg/stripes.png');
     splashScreen = loadImage('./art/bg/splashscreen.png');
     tutorialScreenshot = loadImage('./art/interface/tutorial-screenshots.png');
     lostCaughtBG = loadImage('./art/bg/lost-caught-bg.png');
     lostTimeoutBG = loadImage('./art/bg/lost-timeout-bg.png');
+    winScreen = loadImage('./art/bg/winscreen.png');
     robotIngameOne = loadImage(`${robotsFilePath}/ingame-1.png`);
     robotIngameTwo = loadImage(`${robotsFilePath}/ingame-2.png`);
     robotIngameThree = loadImage(`${robotsFilePath}/ingame-3.png`);
@@ -519,8 +525,14 @@ function draw() {
     tutorial.draw();
 }
 function mousePressed() {
+    tutorial.isShown = false;
     stateManager.mousePressed();
     tutorial.mouseClicked();
+}
+function keyPressed() {
+    if (keyCode === ESCAPE) {
+        stateManager.switchToMainMenu();
+    }
 }
 class Button {
     constructor(buttonConfig) {
@@ -582,6 +594,7 @@ class IntroSplashScreen {
     setup() {
     }
     draw() {
+        image(stripesBackground, 0, 0);
         push();
         image(splashScreen, -splashScreen.width / 2 - 150, -60, splashScreen.width * 1.5, splashScreen.height * 1.5);
         fill(COLOR_YELLOW);
@@ -691,14 +704,17 @@ const volumeControl = new VolumeControl();
 class TextButton {
     constructor(buttonConfig) {
         this.size = 20;
+        this.a = 1.75;
         this.positionX = buttonConfig.positionX || 0;
         this.positionY = buttonConfig.positionY || 0;
         this.text = buttonConfig.text;
         this.onClick = buttonConfig.onClick;
-        this.size = buttonConfig.size || 20;
+        this.size = buttonConfig.size || 30;
+        this.outlineColor = buttonConfig.outlineColor || COLOR_MAIN_PINK;
     }
     draw() {
         push();
+        textAlign(CENTER, CENTER);
         if (this.isMouseOver()) {
             strokeWeight(3);
             stroke(COLOR_WHITE);
@@ -710,7 +726,7 @@ class TextButton {
         }
         else {
             strokeWeight(2);
-            stroke(COLOR_MAIN_PINK);
+            stroke(this.outlineColor);
             textSize(this.size);
             fill(COLOR_WHITE);
         }
@@ -721,9 +737,9 @@ class TextButton {
         const x = this.positionX - textWidth(this.text) / 2;
         const y = this.positionY - this.size / 2;
         if (mouseX > x &&
-            mouseX < x + textWidth(this.text) * 1.1 &&
+            mouseX < x + textWidth(this.text) * this.a &&
             mouseY > y &&
-            mouseY < y + this.size * 1.25) {
+            mouseY < y + this.size * this.a) {
             return true;
         }
     }
@@ -731,9 +747,9 @@ class TextButton {
         const x = this.positionX - textWidth(this.text) / 2;
         const y = this.positionY - this.size / 2;
         if (mouseX < x ||
-            mouseX > x + textWidth(this.text) * 1.1 ||
+            mouseX > x + textWidth(this.text) * this.a ||
             mouseY < y ||
-            mouseY > y + this.size * 1.25) {
+            mouseY > y + this.size * this.a) {
             return true;
         }
     }
@@ -745,18 +761,25 @@ class TextButton {
 }
 class MainMenu {
     constructor() {
-        this.buttonX = 200;
-        this.buttonY = 400;
         this.buttonWidth = 200;
         this.buttonHeight = 50;
         this.startGameButton = new TextButton({
-            positionX: this.buttonX,
-            positionY: this.buttonY,
+            positionX: 150,
+            positionY: 500,
             text: 'Start Game',
             onClick: () => {
                 stateManager.switchToLevelSelection();
             },
-            size: 50
+            outlineColor: COLOR_SATURATED_PINK
+        });
+        this.howToGameButton = new TextButton({
+            positionX: 150,
+            positionY: 550,
+            text: 'How to play',
+            onClick: () => {
+                tutorial.isShown = true;
+            },
+            outlineColor: COLOR_SATURATED_PINK
         });
     }
     preload() {
@@ -765,17 +788,20 @@ class MainMenu {
         volumeControl.playMusic(musicMenu);
     }
     draw() {
+        image(stripesBackground, 0, 0);
         wobble(true, CENTER, splashScreen, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, splashScreen.width * 1, splashScreen.height * 1, 0.1, 0.03, CANVAS_WIDTH - splashScreen.width * 0.9 / 2, CANVAS_HEIGHT - splashScreen.height * 0.9 / 3);
         this.startGameButton.draw();
+        this.howToGameButton.draw();
     }
     mouseClicked() {
         this.startGameButton.mouseClicked();
+        this.howToGameButton.mouseClicked();
     }
 }
 const mainMenu = new MainMenu();
 class BaseLevel {
     constructor(level) {
-        this.robotPositionY = CANVAS_WIDTH / 2 + 45;
+        this.robotPositionY = CANVAS_WIDTH / 2 + 37;
         this.clickCooldownMeter = 0;
         this.enteredWinning = false;
         this.enteredLosing = false;
@@ -813,6 +839,9 @@ class BaseLevel {
             return;
         }
         this.clickCooldownMeter++;
+        if (this.opponent.currentTimeBeforeGameEnd <= 0) {
+            stateManager.switchToWinMatchScreen(this.level.robotWinImage, this.level.codename === 'level-three');
+        }
         this.drawRobot();
         const forbiddenToProgress = this.opponent.state === OpponentState.WORKING || this.opponent.state === OpponentState.THINKING;
         const playerInteractionConfirmed = (mouseIsPressed && mouseButton === LEFT || touches.length > 0)
@@ -843,7 +872,7 @@ class BaseLevel {
             this.resetFrenzyMode();
             const stringInLocalStorage = `${this.level.codename}-highscore`;
             this.level.bestTime = parseFloat(localStorage.getItem(stringInLocalStorage) || '0');
-            if (this.level.bestTime >= this.countdown.elapsedTime) {
+            if (this.countdown.elapsedTime >= this.level.bestTime) {
                 localStorage.setItem(`${this.level.codename}-highscore`, this.countdown.elapsedTime.toString());
             }
             volumeControl.playSound(soundNeuroOhDear);
@@ -969,6 +998,14 @@ class HelperStateManager {
     mousePressed() {
         this.currentScene.mouseClicked();
     }
+    switchToWinMatchScreen(robot, finalLevel) {
+        const winMatchScreen = new WinMatchScreen(robot, finalLevel);
+        this.currentScene = winMatchScreen;
+    }
+    switchToWinEndScreen() {
+        this.currentScene = winEndScreen;
+        winEndScreen.setup();
+    }
     switchToMainMenu() {
         this.currentScene = mainMenu;
         mainMenu.setup();
@@ -1076,7 +1113,7 @@ class Tutorial {
         text("Neuro tends to lose her tools a lot while building her robots.", CANVAS_WIDTH / 2, 125);
         text("Ruin her career while she is distracted!", CANVAS_WIDTH / 2, 155);
         stroke(COLOR_DARK_PINK);
-        text("Hold left mouse button to reassamble the robot.", CANVAS_WIDTH / 2, CANVAS_HEIGHT - 190);
+        text("Hold left mouse button to reassemble the robot.", CANVAS_WIDTH / 2, CANVAS_HEIGHT - 190);
         text("Release the button before Neuro finds the right tool and turns around.", CANVAS_WIDTH / 2, CANVAS_HEIGHT - 160);
         noStroke();
         text("Be careful, or you'll be thrown into Neuro's dungeon!", CANVAS_WIDTH / 2, CANVAS_HEIGHT - 120);
@@ -1099,11 +1136,6 @@ class Tutorial {
         }
     }
     mouseClicked() {
-        if (this.isShown) {
-            console.log('isShown');
-            this.isShown = false;
-            return;
-        }
         if (this.isMouseOver()) {
             this.openTime = millis();
             console.log(this.openTime);
@@ -1337,8 +1369,8 @@ class Opponent {
         this.maxWorkingTime = 2;
         this.minDistractionTime = 0.75;
         this.maxDistractionTime = 4;
-        this.minFoundTime = 1.1;
-        this.maxFoundTime = 1.6;
+        this.minFoundTime = 0.9;
+        this.maxFoundTime = 1.4;
         this.chanceToTrickThink = 0.3;
         this.chanceToTrickFound = 0.7;
         this.trickedThink = random(0, 1);
@@ -1466,10 +1498,6 @@ class Opponent {
     }
     drawLost() {
         this.currentTimeBeforeGameEnd -= 1;
-        if (this.currentTimeBeforeGameEnd <= 0) {
-            this.currentTimeBeforeGameEnd = this.timeBeforeGameEnd;
-            stateManager.switchToLevelSelection();
-        }
         this.animate(lostOpponentAnimation, this.positionX, this.positionY);
     }
     drawWon() {
@@ -1540,7 +1568,7 @@ class LevelSelection {
                 selectionButtonDisabled: levelOneButtonDisabled,
                 selectionButtonComplete: levelOneButtonComplete,
                 selectionButtonCompleteHover: levelOneButtonCompleteHover,
-                progressStepMultiplier: 1,
+                progressStepMultiplier: 1.2,
                 progressReductionStepMultiplier: 1,
             },
             {
@@ -1571,15 +1599,15 @@ class LevelSelection {
                 selectionButtonComplete: levelThreeButtonComplete,
                 selectionButtonCompleteHover: levelThreeButtonCompleteHover,
                 progressStepMultiplier: 1,
-                progressReductionStepMultiplier: 1,
+                progressReductionStepMultiplier: 1.15,
             }
         ];
         this.levelArrayButtons = [
             {
                 level: this.levelsArray[0],
                 button: new Button({
-                    positionX: 150,
-                    positionY: 100,
+                    positionX: 95,
+                    positionY: 90,
                     spriteIdle: levelOneButtonActive,
                     spriteHover: levelOneButtonHover,
                     spriteDisabled: levelOneButtonDisabled,
@@ -1590,8 +1618,8 @@ class LevelSelection {
             {
                 level: this.levelsArray[1],
                 button: new Button({
-                    positionX: 145,
-                    positionY: 375,
+                    positionX: 95,
+                    positionY: 355,
                     spriteIdle: levelTwoButtonActive,
                     spriteHover: levelTwoButtonHover,
                     spriteDisabled: levelTwoButtonDisabled,
@@ -1602,7 +1630,7 @@ class LevelSelection {
             {
                 level: this.levelsArray[2],
                 button: new Button({
-                    positionX: 450,
+                    positionX: 475,
                     positionY: 105,
                     spriteIdle: levelThreeButtonActive,
                     spriteHover: levelThreeButtonHover,
@@ -1614,6 +1642,7 @@ class LevelSelection {
         ];
     }
     draw() {
+        image(levelsScreen, 0, 0);
         for (const [index, button] of this.levelArrayButtons.entries()) {
             const stringInLocalStorage = `${button.level.codename}-highscore`;
             if (index > 0) {
@@ -1633,8 +1662,14 @@ class LevelSelection {
             }
             button.button.draw();
             fill(COLOR_DARK);
-            if (button.level.bestTime)
-                text(`Best time: ${formatTime(button.level.bestTime)}`, button.button.positionX + 10, button.button.positionY + button.button.height + 25);
+            if (button.level.bestTime) {
+                push();
+                strokeWeight(2);
+                stroke(COLOR_DARK);
+                fill(COLOR_WHITE);
+                text(`Best time: ${formatTime(button.level.bestTime)}`, button.button.positionX + 10, button.button.positionY + button.button.height + 20);
+                pop();
+            }
         }
     }
     mouseClicked() {
@@ -1648,8 +1683,8 @@ const levelSelection = new LevelSelection();
 class LoseScreen {
     constructor() {
         this.backButton = new TextButton({
-            positionX: 200,
-            positionY: 100,
+            positionX: CANVAS_WIDTH / 4 * 3,
+            positionY: CANVAS_HEIGHT / 4 + 75,
             text: 'Try again',
             onClick: () => { stateManager.switchToLevelSelection(); }
         });
@@ -1671,4 +1706,81 @@ class LoseScreen {
     }
 }
 const loseScreen = new LoseScreen();
+class WinEndScreen {
+    constructor() {
+        this.backButton = new TextButton({
+            positionX: CANVAS_WIDTH - 135,
+            positionY: CANVAS_HEIGHT - 100,
+            text: 'Back to menu',
+            onClick: () => { stateManager.switchToLevelSelection(); }
+        });
+    }
+    setup() {
+        this.bg = winScreen;
+    }
+    draw() {
+        push();
+        image(this.bg, 0, 0);
+        translate(10, sin(frameCount * 0.2) * 2);
+        rectMode(CENTER);
+        push();
+        noStroke();
+        fill(0, 0, 0, 175);
+        rect(555, 145, 410, 135, 20, 20, 20, 20);
+        pop();
+        strokeWeight(5);
+        stroke(COLOR_DARK);
+        fill(COLOR_YELLOW);
+        textSize(40);
+        textAlign(CENTER);
+        text("Congratulations!", CANVAS_WIDTH / 4 * 2.75, 110);
+        strokeWeight(3);
+        textSize(25);
+        text("You've ruined your sister's career!", CANVAS_WIDTH / 4 * 2.75, 120 + 35);
+        text("Now you both rule the world!", CANVAS_WIDTH / 4 * 2.75, 120 + 85);
+        pop();
+        this.backButton.draw();
+    }
+    mouseClicked() {
+        this.backButton.mouseClicked();
+    }
+}
+const winEndScreen = new WinEndScreen();
+class WinMatchScreen {
+    constructor(robot, finalLevel) {
+        this.robot = robot;
+        this.backButton = new TextButton({
+            positionX: CANVAS_WIDTH / 2,
+            positionY: CANVAS_HEIGHT / 2 + 225,
+            text: 'Continue',
+            onClick: () => { stateManager.switchToLevelSelection(); },
+            outlineColor: COLOR_DARK,
+        });
+        if (finalLevel)
+            this.backButton.onClick = () => { stateManager.switchToWinEndScreen(); };
+    }
+    draw() {
+        push();
+        image(stripesBackground, 0, 0);
+        push();
+        imageMode(CENTER);
+        image(this.robot, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 55, this.robot.width * 1.25, this.robot.height * 1.25);
+        translate(10, sin(frameCount * 0.2) * 2);
+        rectMode(CENTER);
+        noStroke();
+        fill(255, 255, 255, 175);
+        rect(CANVAS_WIDTH / 2, 225, 300, 75, 20, 20, 20, 20);
+        strokeWeight(4);
+        stroke(COLOR_DARK);
+        fill(COLOR_YELLOW);
+        textSize(50);
+        textAlign(CENTER);
+        text("Good job!", CANVAS_WIDTH / 2, 240);
+        pop();
+        this.backButton.draw();
+    }
+    mouseClicked() {
+        this.backButton.mouseClicked();
+    }
+}
 //# sourceMappingURL=build.js.map

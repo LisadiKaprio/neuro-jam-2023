@@ -3,6 +3,7 @@ class IntroSplashScreen {
 
     }
     draw() {
+        image(stripesBackground, 0, 0);
         push();
         image(splashScreen, -splashScreen.width / 2 - 150, -60, splashScreen.width * 1.5, splashScreen.height * 1.5)
         fill(COLOR_YELLOW);
