@@ -60,6 +60,7 @@ let soundClankTap;
 let soundToolbox;
 let soundToolboxTwo;
 let soundToolboxThree;
+let soundDeadBirdsOverHead;
 let buttonHelpIdle;
 let buttonHelpHover;
 let buttonMusicIdle;
@@ -159,6 +160,7 @@ function preload() {
     soundToolbox = loadSound(`./audio/sound-toolbox.wav`);
     soundToolboxTwo = loadSound(`./audio/sound-toolbox-two.wav`);
     soundToolboxThree = loadSound(`./audio/sound-toolbox-three.wav`);
+    soundDeadBirdsOverHead = loadSound(`./audio/dead-birds-over-head.wav`);
     customFont = loadFont('./fonts/CherryBombOne-Regular.ttf');
     buttonHelpIdle = loadImage(`./art/interface/button-help.png`);
     buttonHelpHover = loadImage(`./art/interface/button-help-hover.png`);
@@ -815,6 +817,7 @@ class BaseLevel {
         this.frenzyProgressStepMultiplier = 2.25;
         this.currentFrame = 0;
         this.currentProgress = 0;
+        this.isBestTime = false;
         this.level = level;
         this.progressBar = new ProgressBar();
         this.countdown = new Countdown();
@@ -840,7 +843,7 @@ class BaseLevel {
         }
         this.clickCooldownMeter++;
         if (this.opponent.currentTimeBeforeGameEnd <= 0) {
-            stateManager.switchToWinMatchScreen(this.level.robotWinImage, this.level.codename === 'level-three');
+            stateManager.switchToWinMatchScreen(this.level.robotWinImage, this.isBestTime, this.level.codename === 'level-three');
         }
         this.drawRobot();
         const forbiddenToProgress = this.opponent.state === OpponentState.WORKING || this.opponent.state === OpponentState.THINKING;
@@ -849,7 +852,8 @@ class BaseLevel {
         const validPlayerInteractionConfirmed = !forbiddenToProgress
             && this.opponent.state !== OpponentState.LOST
             && this.opponent.state !== OpponentState.WON
-            && playerInteractionConfirmed;
+            && playerInteractionConfirmed
+            && this.countdown.remainingTime > 0;
         const losingPlayerInteractionConfirmed = forbiddenToProgress
             && playerInteractionConfirmed;
         this.drawFrenzyMeter();
@@ -872,7 +876,10 @@ class BaseLevel {
             this.resetFrenzyMode();
             const stringInLocalStorage = `${this.level.codename}-highscore`;
             this.level.bestTime = parseFloat(localStorage.getItem(stringInLocalStorage) || '0');
-            if (this.countdown.elapsedTime >= this.level.bestTime) {
+            console.log('this.level.bestTime ' + this.level.bestTime);
+            console.log('this.countdown.elapsedTime ' + this.countdown.elapsedTime);
+            if (!this.level.bestTime || this.countdown.elapsedTime <= this.level.bestTime) {
+                this.isBestTime = true;
                 localStorage.setItem(`${this.level.codename}-highscore`, this.countdown.elapsedTime.toString());
             }
             volumeControl.playSound(soundNeuroOhDear);
@@ -998,8 +1005,8 @@ class HelperStateManager {
     mousePressed() {
         this.currentScene.mouseClicked();
     }
-    switchToWinMatchScreen(robot, finalLevel) {
-        const winMatchScreen = new WinMatchScreen(robot, finalLevel);
+    switchToWinMatchScreen(robot, isBestTime, finalLevel) {
+        const winMatchScreen = new WinMatchScreen(robot, isBestTime, finalLevel);
         this.currentScene = winMatchScreen;
     }
     switchToWinEndScreen() {
@@ -1015,6 +1022,7 @@ class HelperStateManager {
         levelSelection.setup();
     }
     switchToLoseScreen(image, text) {
+        volumeControl.playSound(soundDeadBirdsOverHead);
         volumeControl.playMusic(musicMenu);
         loseScreen.bg = image;
         loseScreen.text = text;
@@ -1356,8 +1364,8 @@ class Opponent {
         this.state = OpponentState.WORKING;
         this.currentFrame = 0;
         this.characterSize = 0.9;
-        this.timeBeforeGameEnd = FRAMERATE * 8;
-        this.timeBeforeGameEndIfLost = FRAMERATE * 4;
+        this.timeBeforeGameEnd = FRAMERATE * 5;
+        this.timeBeforeGameEndIfLost = FRAMERATE * 3;
         this.currentTimeBeforeGameEnd = this.timeBeforeGameEndIfLost;
         this.characterWidth = workingOpponentImages[0].width * this.characterSize;
         this.characterHeight = workingOpponentImages[0].height * this.characterSize;
@@ -1747,8 +1755,9 @@ class WinEndScreen {
 }
 const winEndScreen = new WinEndScreen();
 class WinMatchScreen {
-    constructor(robot, finalLevel) {
+    constructor(robot, newBestTime, finalLevel) {
         this.robot = robot;
+        this.newBestTime = newBestTime;
         this.backButton = new TextButton({
             positionX: CANVAS_WIDTH / 2,
             positionY: CANVAS_HEIGHT / 2 + 225,
@@ -1777,6 +1786,17 @@ class WinMatchScreen {
         textAlign(CENTER);
         text("Good job!", CANVAS_WIDTH / 2, 240);
         pop();
+        if (this.newBestTime) {
+            push();
+            translate(10, sin(frameCount * 0.5) * 1);
+            strokeWeight(2);
+            stroke(COLOR_DARK);
+            fill(COLOR_MAIN_PINK);
+            textSize(30);
+            textAlign(CENTER);
+            text("New best time!", CANVAS_WIDTH / 2, 175);
+            pop();
+        }
         this.backButton.draw();
     }
     mouseClicked() {

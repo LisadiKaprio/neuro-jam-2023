@@ -44,8 +44,11 @@ class WinMatchScreen {
             push()
             translate(10, sin(frameCount * 0.5) * 1)
             strokeWeight(2);
+            stroke(COLOR_DARK);
+            fill(COLOR_MAIN_PINK)
             textSize(30)
-            text("New best time!", CANVAS_WIDTH / 2, 200)
+            textAlign(CENTER)
+            text("New best time!", CANVAS_WIDTH / 2, 175)
             pop()
         }
         this.backButton.draw();
