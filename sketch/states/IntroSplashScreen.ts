@@ -16,7 +16,9 @@ class IntroSplashScreen {
     }
 
     mouseClicked() {
-        stateManager.switchToMainMenu();
+        if (mouseButton === LEFT || touches.length > 0) {
+            stateManager.switchToMainMenu();
+        }
     }
 }
 

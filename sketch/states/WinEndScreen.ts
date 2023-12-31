@@ -17,6 +17,7 @@ class WinEndScreen {
     }
 
     draw() {
+        levelSelection.gameIsFinished = true;
         push()
         image(this.bg, 0, 0)
 

@@ -17,6 +17,7 @@ class TextButton {
     public text: string;
     public onClick: () => void;
     public outlineColor: string;
+    public mouseEntered = false;
 
     constructor(buttonConfig: TextButtonConfig) {
         this.positionX = buttonConfig.positionX || 0;
@@ -44,6 +45,13 @@ class TextButton {
         }
         text(this.text, this.positionX, this.positionY);
         pop();
+
+        if (!this.mouseEntered && this.isMouseOver()) {
+            this.mouseEntered = true;
+            volumeControl.playSound(soundBloop);
+        } else if (this.mouseEntered && !this.isMouseOver()) {
+            this.mouseEntered = false;
+        }
     }
 
     public isMouseOver() {
@@ -74,6 +82,7 @@ class TextButton {
 
     mouseClicked() {
         if (this.isMouseOver()) {
+            volumeControl.playSound(soundPow);
             this.onClick();
         }
     }

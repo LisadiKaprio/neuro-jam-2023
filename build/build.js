@@ -76,6 +76,7 @@ let spriteProgressEmpty;
 let spriteProgressFull;
 let spriteProgressFrenzy;
 let defaultBackground;
+let particleImages;
 let levelsScreen;
 let splashScreen;
 let stripesBackground;
@@ -96,14 +97,14 @@ let evilWonImages;
 let evilWonAnimation;
 let workingOpponentImages;
 let workingOpponentAnimation;
-let workingArmImage;
+let workingArmImages;
 let thinkingOpponentImages;
 let thinkingOpponentAnimation;
 let distractedOpponentImages;
 let distractedOpponentAnimation;
 let foundOpponentImages;
 let foundOpponentAnimation;
-let foundArmImage;
+let foundArmImages;
 let shockedOpponentImages;
 let shockedOpponentAnimation;
 let lostOpponentImages;
@@ -138,6 +139,7 @@ let levelThreeButtonHover;
 let levelThreeButtonDisabled;
 let levelThreeButtonComplete;
 let levelThreeButtonCompleteHover;
+let completeImage;
 function preload() {
     soundFormats('mp3', 'wav');
     musicMenu = loadSound(`./audio/music-little-think.mp3`);
@@ -208,6 +210,8 @@ function preload() {
     levelThreeButtonDisabled = loadImage(`${robotsFilePath}/level-3-disabled.png`);
     levelThreeButtonComplete = loadImage(`${robotsFilePath}/level-3-complete.png`);
     levelThreeButtonCompleteHover = loadImage(`${robotsFilePath}/level-3-complete-hover.png`);
+    completeImage = loadImage(`${robotsFilePath}/complete.png`);
+    particleImages = Array.from({ length: 6 }, (_, i) => loadImage(`${animFilePath}/particle-${i}.png`));
     cloudEvilImages = Array.from({ length: 3 }, (_, i) => loadImage(`${robotsFilePath}/cloud-evil-${i}.png`));
     cloudEvilAnimation = [
         {
@@ -344,7 +348,7 @@ function preload() {
             duration: NORMAL_FRAME_DURATION
         },
     ];
-    workingArmImage = loadImage(`${opponentFilePath}/working-arm-0.png`);
+    workingArmImages = Array.from({ length: 3 }, (_, i) => loadImage(`${opponentFilePath}/working-arm-${i}.png`));
     thinkingOpponentImages = Array.from({ length: 4 }, (_, i) => loadImage(`${opponentFilePath}/thinking-${i}.png`));
     thinkingOpponentAnimation = [
         {
@@ -474,7 +478,7 @@ function preload() {
             duration: NORMAL_FRAME_DURATION
         }
     ];
-    foundArmImage = loadImage(`${opponentFilePath}/found-arm-0.png`);
+    foundArmImages = Array.from({ length: 3 }, (_, i) => loadImage(`${opponentFilePath}/found-arm-${i}.png`));
     shockedOpponentImages = Array.from({ length: 2 }, (_, i) => loadImage(`${opponentFilePath}/shocked-${i}.png`));
     shockedOpponentAnimation = [
         {
@@ -608,7 +612,9 @@ class IntroSplashScreen {
         pop();
     }
     mouseClicked() {
-        stateManager.switchToMainMenu();
+        if (mouseButton === LEFT || touches.length > 0) {
+            stateManager.switchToMainMenu();
+        }
     }
 }
 const introSplashScreen = new IntroSplashScreen();
@@ -707,6 +713,7 @@ class TextButton {
     constructor(buttonConfig) {
         this.size = 20;
         this.a = 1.75;
+        this.mouseEntered = false;
         this.positionX = buttonConfig.positionX || 0;
         this.positionY = buttonConfig.positionY || 0;
         this.text = buttonConfig.text;
@@ -734,6 +741,13 @@ class TextButton {
         }
         text(this.text, this.positionX, this.positionY);
         pop();
+        if (!this.mouseEntered && this.isMouseOver()) {
+            this.mouseEntered = true;
+            volumeControl.playSound(soundBloop);
+        }
+        else if (this.mouseEntered && !this.isMouseOver()) {
+            this.mouseEntered = false;
+        }
     }
     isMouseOver() {
         const x = this.positionX - textWidth(this.text) / 2;
@@ -757,6 +771,7 @@ class TextButton {
     }
     mouseClicked() {
         if (this.isMouseOver()) {
+            volumeControl.playSound(soundPow);
             this.onClick();
         }
     }
@@ -876,8 +891,6 @@ class BaseLevel {
             this.resetFrenzyMode();
             const stringInLocalStorage = `${this.level.codename}-highscore`;
             this.level.bestTime = parseFloat(localStorage.getItem(stringInLocalStorage) || '0');
-            console.log('this.level.bestTime ' + this.level.bestTime);
-            console.log('this.countdown.elapsedTime ' + this.countdown.elapsedTime);
             if (!this.level.bestTime || this.countdown.elapsedTime <= this.level.bestTime) {
                 this.isBestTime = true;
                 localStorage.setItem(`${this.level.codename}-highscore`, this.countdown.elapsedTime.toString());
@@ -1036,9 +1049,9 @@ class HelperStateManager {
 }
 const stateManager = new HelperStateManager();
 class Particles {
-    constructor(x, y, possibleParticles, minVelX, maxVelX, minVelY, maxVelY) {
-        this.timeUntilNextParticle = FRAMERATE * 2;
-        this.possibleParticles = possibleParticles;
+    constructor(x, y, minVelX, maxVelX, minVelY, maxVelY, gravity) {
+        this.timeUntilNextParticle = 0;
+        this.possibleParticles = particleImages;
         this.particles = [];
         this.x = x;
         this.y = y;
@@ -1046,12 +1059,14 @@ class Particles {
         this.maxVelX = maxVelX;
         this.minVelY = minVelY;
         this.maxVelY = maxVelY;
+        this.gravity = gravity || 0.2;
     }
     draw() {
         this.timeUntilNextParticle--;
         if (this.timeUntilNextParticle <= 0) {
-            let p = new Particle(this.x, this.y, random(this.possibleParticles), this.minVelX, this.maxVelX, this.minVelY, this.maxVelY);
+            let p = new Particle(this.x, this.y, random(this.possibleParticles), this.minVelX, this.maxVelX, this.minVelY, this.maxVelY, this.gravity);
             this.particles.push(p);
+            this.timeUntilNextParticle = random(3, 8);
         }
         for (let i = this.particles.length - 1; i >= 0; i--) {
             this.particles[i].update();
@@ -1061,24 +1076,32 @@ class Particles {
             }
         }
     }
+    clearParticles() {
+        this.particles = [];
+    }
 }
 class Particle {
-    constructor(x, y, image, minVelX, maxVelX, minVelY, maxVelY) {
+    constructor(x, y, image, minVelX, maxVelX, minVelY, maxVelY, gravity) {
+        this.initialRotation = random(0, 360);
         this.x = x;
         this.y = y;
         this.velX = random(minVelX, maxVelX);
         this.velY = random(minVelY, maxVelY);
-        this.width = 10;
-        this.height = 10;
+        this.gravity = gravity;
+        this.image = image;
     }
     update() {
         this.x += this.velX;
         this.y += this.velY;
-        this.velY += 0.2;
+        this.velY += this.gravity;
     }
     display() {
-        fill(0);
-        rect(this.x, this.y, this.width, this.height);
+        push();
+        imageMode(CENTER);
+        translate(this.x, this.y);
+        rotate(frameCount * 0.4 + this.initialRotation);
+        image(this.image, 0, 0, this.image.width, this.image.height);
+        pop();
     }
     isOffScreen() {
         return this.y > height;
@@ -1125,6 +1148,8 @@ class Tutorial {
         text("Release the button before Neuro finds the right tool and turns around.", CANVAS_WIDTH / 2, CANVAS_HEIGHT - 160);
         noStroke();
         text("Be careful, or you'll be thrown into Neuro's dungeon!", CANVAS_WIDTH / 2, CANVAS_HEIGHT - 120);
+        textSize(16);
+        text("Press ESC at any time to get to main menu.", CANVAS_WIDTH / 2, CANVAS_HEIGHT - 75);
         pop();
     }
     isMouseOver() {
@@ -1383,7 +1408,9 @@ class Opponent {
         this.chanceToTrickFound = 0.7;
         this.trickedThink = random(0, 1);
         this.trickedFound = random(0, 7);
+        this.currentTool = random([0, 1, 2]);
         this.timeUntilStateChange = random(FRAMERATE * this.minWorkingTime, FRAMERATE * this.maxWorkingTime);
+        this.particles = new Particles(this.positionX + this.characterWidth / 2, this.positionY + this.characterHeight / 2, -50, -20, -130, -1, 19);
     }
     draw() {
         this.frameCountSinceAnimationStart++;
@@ -1434,10 +1461,12 @@ class Opponent {
                 }
                 break;
             case OpponentState.DISTRACTED:
+                this.currentTool = random([0, 1, 2]);
                 volumeControl.playSound(random([soundNeuroHeart, soundNeuroWuu]));
                 this.changeToState(OpponentState.FOUND, FRAMERATE * this.minFoundTime, FRAMERATE * this.maxFoundTime);
                 break;
             case OpponentState.FOUND:
+                this.particles.clearParticles();
                 let randomizerFound = random(0, 1);
                 if (randomizerFound <= this.chanceToTrickFound && this.trickedFound > 0) {
                     this.trickedFound--;
@@ -1476,7 +1505,8 @@ class Opponent {
         translate(this.positionX + (this.characterWidth / 2) + 45, this.positionY + this.characterHeight / 2 + 31);
         let armRotation = sin(frameCount * 0.5) * 0.75;
         rotate(armRotation);
-        image(workingArmImage, -workingArmImage.width, -workingArmImage.height / 2, workingArmImage.width, workingArmImage.height);
+        const armImage = workingArmImages[this.currentTool];
+        image(armImage, -armImage.width, -armImage.height / 2, armImage.width, armImage.height);
         pop();
         if (armRotation <= -0.7) {
         }
@@ -1486,13 +1516,15 @@ class Opponent {
         this.animate(thinkingOpponentAnimation, this.positionX, this.positionY);
     }
     drawDistracted() {
+        this.particles.draw();
         this.animate(distractedOpponentAnimation, this.positionX, this.positionY);
     }
     drawFound() {
         push();
         imageMode(CENTER);
         translate(0, sin(frameCount * 0.2) * 8);
-        image(foundArmImage, this.positionX + this.characterWidth - foundArmImage.width, this.positionY + (this.characterHeight / 2) - 20);
+        const armImage = foundArmImages[this.currentTool];
+        image(armImage, this.positionX + this.characterWidth - armImage.width, this.positionY + (this.characterHeight / 2) - 25);
         pop();
         this.animate(foundOpponentAnimation, this.positionX, this.positionY);
     }
@@ -1557,6 +1589,7 @@ class ProgressBar {
 }
 class LevelSelection {
     constructor() {
+        this.gameIsFinished = false;
         this.buttonX = 100;
         this.buttonY = 50;
         this.buttonWidth = 200;
@@ -1651,6 +1684,13 @@ class LevelSelection {
     }
     draw() {
         image(levelsScreen, 0, 0);
+        if (this.gameIsFinished) {
+            push();
+            rotate(sin(frameCount * 0.1) * 0.1);
+            image(this.gameFinishedImage, 475, 355);
+            pop();
+            return;
+        }
         for (const [index, button] of this.levelArrayButtons.entries()) {
             const stringInLocalStorage = `${button.level.codename}-highscore`;
             if (index > 0) {
@@ -1727,6 +1767,7 @@ class WinEndScreen {
         this.bg = winScreen;
     }
     draw() {
+        levelSelection.gameIsFinished = true;
         push();
         image(this.bg, 0, 0);
         translate(10, sin(frameCount * 0.2) * 2);

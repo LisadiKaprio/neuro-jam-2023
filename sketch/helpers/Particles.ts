@@ -1,16 +1,16 @@
 class Particles {
     possibleParticles: p5.Image[];
     particles: Particle[];
-    timeUntilNextParticle: number = FRAMERATE * 2;
+    timeUntilNextParticle: number = 0;
     x: number;
     y: number;
     minVelX: number;
     maxVelX: number;
     minVelY: number;
     maxVelY: number;
-
-    constructor(x: number, y: number, possibleParticles: p5.Image[], minVelX: number, maxVelX: number, minVelY: number, maxVelY: number) {
-        this.possibleParticles = possibleParticles;
+    gravity: number;
+    constructor(x: number, y: number, minVelX: number, maxVelX: number, minVelY: number, maxVelY: number, gravity?: number) {
+        this.possibleParticles = particleImages;
         this.particles = [];
         this.x = x;
         this.y = y;
@@ -19,13 +19,15 @@ class Particles {
         this.maxVelX = maxVelX;
         this.minVelY = minVelY;
         this.maxVelY = maxVelY;
+        this.gravity = gravity || 0.2;
     }
 
     draw() {// Display and update all particles
         this.timeUntilNextParticle--;
         if (this.timeUntilNextParticle <= 0) {
-            let p = new Particle(this.x, this.y, random(this.possibleParticles), this.minVelX, this.maxVelX, this.minVelY, this.maxVelY);
+            let p = new Particle(this.x, this.y, random(this.possibleParticles), this.minVelX, this.maxVelX, this.minVelY, this.maxVelY, this.gravity);
             this.particles.push(p);
+            this.timeUntilNextParticle = random(3, 8);
         }
 
         for (let i = this.particles.length - 1; i >= 0; i--) {
@@ -39,9 +41,11 @@ class Particles {
         }
     }
 
+    clearParticles() {
+        this.particles = [];
+    }
+
 }
-
-
 
 class Particle {
     private x: number;
@@ -50,14 +54,17 @@ class Particle {
     private velY: number;
     private width: number;
     private height: number;
+    private gravity: number;
+    image: p5.Image;
+    initialRotation: number = random(0, 360);
 
-    constructor(x: number, y: number, image: p5.Image, minVelX: number, maxVelX: number, minVelY: number, maxVelY: number) {
+    constructor(x: number, y: number, image: p5.Image, minVelX: number, maxVelX: number, minVelY: number, maxVelY: number, gravity: number) {
         this.x = x;
         this.y = y;
         this.velX = random(minVelX, maxVelX);
         this.velY = random(minVelY, maxVelY);
-        this.width = 10;
-        this.height = 10;
+        this.gravity = gravity;
+        this.image = image;
     }
 
     update() {
@@ -65,13 +72,17 @@ class Particle {
         this.x += this.velX;
         this.y += this.velY;
         // Apply gravity
-        this.velY += 0.2;
+        this.velY += this.gravity;
     }
 
     display() {
-        // Display the rectangle
-        fill(0);
-        rect(this.x, this.y, this.width, this.height);
+        // Display the image with constant rotation
+        push();
+        imageMode(CENTER);
+        translate(this.x, this.y);
+        rotate(frameCount * 0.4 + this.initialRotation); // Adjust the rotation speed as desired
+        image(this.image, 0, 0, this.image.width, this.image.height);
+        pop();
     }
 
     isOffScreen() {

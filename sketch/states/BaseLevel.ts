@@ -103,8 +103,6 @@ class BaseLevel {
 
             const stringInLocalStorage = `${this.level.codename}-highscore`;
             this.level.bestTime = parseFloat(localStorage.getItem(stringInLocalStorage) || '0');
-            console.log('this.level.bestTime ' + this.level.bestTime)
-            console.log('this.countdown.elapsedTime ' + this.countdown.elapsedTime)
             if (!this.level.bestTime || this.countdown.elapsedTime <= this.level.bestTime) {
                 this.isBestTime = true;
                 localStorage.setItem(`${this.level.codename}-highscore`, this.countdown.elapsedTime.toString());

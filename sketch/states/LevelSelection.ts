@@ -33,6 +33,9 @@ class LevelSelection {
     private buttonWidth: number;
     private buttonHeight: number;
 
+    public gameIsFinished = false;
+    private gameFinishedImage: p5.Image;
+
     public levelsArray: Level[];
     public levelArrayButtons: LevelButton[];
 
@@ -132,6 +135,13 @@ class LevelSelection {
 
     draw() {
         image(levelsScreen, 0, 0)
+        if (this.gameIsFinished) {
+            push()
+            rotate(sin(frameCount * 0.1) * 0.1)
+            image(this.gameFinishedImage, 475, 355);
+            pop()
+            return;
+        }
         for (const [index, button] of this.levelArrayButtons.entries()) {
 
             const stringInLocalStorage = `${button.level.codename}-highscore`;

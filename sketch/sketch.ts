@@ -49,6 +49,8 @@ let spriteProgressFrenzy: p5.Image;
 
 let defaultBackground: p5.Image;
 
+let particleImages: p5.Image[];
+
 let levelsScreen: p5.Image;
 let splashScreen: p5.Image;
 let stripesBackground: p5.Image;
@@ -77,7 +79,7 @@ let evilWonAnimation: Frame[];
 let workingOpponentImages: p5.Image[];
 let workingOpponentAnimation: Frame[];
 
-let workingArmImage: p5.Image;
+let workingArmImages: p5.Image[];
 
 let thinkingOpponentImages: p5.Image[];
 let thinkingOpponentAnimation: Frame[];
@@ -88,7 +90,7 @@ let distractedOpponentAnimation: Frame[];
 let foundOpponentImages: p5.Image[];
 let foundOpponentAnimation: Frame[];
 
-let foundArmImage: p5.Image;
+let foundArmImages: p5.Image[];
 
 let shockedOpponentImages: p5.Image[];
 let shockedOpponentAnimation: Frame[];
@@ -130,6 +132,7 @@ let levelThreeButtonHover: p5.Image;
 let levelThreeButtonDisabled: p5.Image;
 let levelThreeButtonComplete: p5.Image;
 let levelThreeButtonCompleteHover: p5.Image;
+let completeImage: p5.Image;
 
 
 function preload() {
@@ -225,6 +228,9 @@ function preload() {
   levelThreeButtonDisabled = loadImage(`${robotsFilePath}/level-3-disabled.png`);
   levelThreeButtonComplete = loadImage(`${robotsFilePath}/level-3-complete.png`);
   levelThreeButtonCompleteHover = loadImage(`${robotsFilePath}/level-3-complete-hover.png`);
+  completeImage = loadImage(`${robotsFilePath}/complete.png`);
+
+  particleImages = Array.from({ length: 6 }, (_, i) => loadImage(`${animFilePath}/particle-${i}.png`));
 
   cloudEvilImages = Array.from({ length: 3 }, (_, i) => loadImage(`${robotsFilePath}/cloud-evil-${i}.png`));
   cloudEvilAnimation = [
@@ -370,7 +376,7 @@ function preload() {
     },
   ] as Frame[];
 
-  workingArmImage = loadImage(`${opponentFilePath}/working-arm-0.png`);
+  workingArmImages = Array.from({ length: 3 }, (_, i) => loadImage(`${opponentFilePath}/working-arm-${i}.png`));
 
   thinkingOpponentImages = Array.from({ length: 4 }, (_, i) => loadImage(`${opponentFilePath}/thinking-${i}.png`));
   thinkingOpponentAnimation = [
@@ -503,7 +509,7 @@ function preload() {
       duration: NORMAL_FRAME_DURATION
     }
   ]
-  foundArmImage = loadImage(`${opponentFilePath}/found-arm-0.png`);
+  foundArmImages = Array.from({ length: 3 }, (_, i) => loadImage(`${opponentFilePath}/found-arm-${i}.png`));
 
   shockedOpponentImages = Array.from({ length: 2 }, (_, i) => loadImage(`${opponentFilePath}/shocked-${i}.png`));
   shockedOpponentAnimation = [

@@ -47,6 +47,8 @@ class Tutorial {
         text("Release the button before Neuro finds the right tool and turns around.", CANVAS_WIDTH / 2, CANVAS_HEIGHT - 160);
         noStroke();
         text("Be careful, or you'll be thrown into Neuro's dungeon!", CANVAS_WIDTH / 2, CANVAS_HEIGHT - 120);
+        textSize(16);
+        text("Press ESC at any time to get to main menu.", CANVAS_WIDTH / 2, CANVAS_HEIGHT - 75);
         pop();
     }
 

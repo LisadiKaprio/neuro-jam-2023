@@ -47,7 +47,17 @@ class Opponent {
     public trickedThink = random(0, 1);
     public trickedFound = random(0, 7);
 
+    currentTool = random([0, 1, 2]);
     private timeUntilStateChange = random(FRAMERATE * this.minWorkingTime, FRAMERATE * this.maxWorkingTime);
+
+    private particles = new Particles(
+        this.positionX + this.characterWidth / 2,
+        this.positionY + this.characterHeight / 2,
+        -50,
+        -20,
+        -130,
+        -1,
+        19)
 
     constructor() {
     }
@@ -102,10 +112,12 @@ class Opponent {
                 }
                 break;
             case OpponentState.DISTRACTED:
+                this.currentTool = random([0, 1, 2]);
                 volumeControl.playSound(random([soundNeuroHeart, soundNeuroWuu]));
                 this.changeToState(OpponentState.FOUND, FRAMERATE * this.minFoundTime, FRAMERATE * this.maxFoundTime);
                 break;
             case OpponentState.FOUND:
+                this.particles.clearParticles();
                 let randomizerFound = random(0, 1);
                 if (randomizerFound <= this.chanceToTrickFound && this.trickedFound > 0) {
                     this.trickedFound--;
@@ -146,7 +158,8 @@ class Opponent {
         translate(this.positionX + (this.characterWidth / 2) + 45, this.positionY + this.characterHeight / 2 + 31);
         let armRotation = sin(frameCount * 0.5) * 0.75;
         rotate(armRotation);
-        image(workingArmImage, -workingArmImage.width, -workingArmImage.height / 2, workingArmImage.width, workingArmImage.height)
+        const armImage = workingArmImages[this.currentTool]
+        image(armImage, -armImage.width, -armImage.height / 2, armImage.width, armImage.height)
         pop();
         if (armRotation <= -0.7) {
             // volumeControl.playSound(random([soundClankTap, soundClank]));
@@ -159,6 +172,7 @@ class Opponent {
     }
 
     drawDistracted() {
+        this.particles.draw();
         this.animate(distractedOpponentAnimation, this.positionX, this.positionY)
     }
 
@@ -166,7 +180,8 @@ class Opponent {
         push();
         imageMode(CENTER);
         translate(0, sin(frameCount * 0.2) * 8);
-        image(foundArmImage, this.positionX + this.characterWidth - foundArmImage.width, this.positionY + (this.characterHeight / 2) - 20)
+        const armImage = foundArmImages[this.currentTool]
+        image(armImage, this.positionX + this.characterWidth - armImage.width, this.positionY + (this.characterHeight / 2) - 25)
         pop();
         this.animate(foundOpponentAnimation, this.positionX, this.positionY)
     }
